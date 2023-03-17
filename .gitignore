@@ -1,0 +1,6 @@
+.idea
+prayhelper.db
+*.pyc
+__pycache__
+migrations
+
