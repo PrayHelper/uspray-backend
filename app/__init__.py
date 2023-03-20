@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restx import Api 
 from .views.main import main
+from .views.user import user
 
 def create_app():
     app = Flask(__name__)
@@ -22,6 +23,7 @@ def create_app():
         security='basic'
     )
     api.add_namespace(main, '')
+    api.add_namespace(user, '/user')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     return app
