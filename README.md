@@ -36,3 +36,11 @@ Swagger
 
 상수는 대문자로 작성하고 복합어인 경우 '_'를 사용하여 단어를 구분한다.
 > ex) public final int SPECIAL_NUMBER = 1;
+
+<br /><br />
+## requirement txt upload
+pip freeze > requirements.txt
+
+<br /><br />
+## requirement txt upload
+pip install -r requirements.txt
