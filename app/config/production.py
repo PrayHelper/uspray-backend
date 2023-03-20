@@ -1,8 +1,6 @@
-from .default import *
 from dotenv import load_dotenv
 import os
-
-load_dotenv(os.path.join(BASE_DIR, '.env'))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 
 SQLALCHEMY_DATABASE_URI = 'postgresql+psycopg2://{user}:{pw}@{url}/{db}'.format(
     user=os.getenv('DB_USER'),

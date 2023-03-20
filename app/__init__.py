@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_restx import Api
 from .views.main import main
+
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
@@ -9,7 +10,7 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    app.config.from_envvar('APP_CONFIG_FILE')
+    # app.config.from_envvar('APP_CONFIG_FILE')
 
     # Swagger
     authorizations = {
@@ -27,11 +28,14 @@ def create_app():
         prefix='/api',
         security='basic'
     )
+    from .views.user import user
     api.add_namespace(main, '')
+    api.add_namespace(user, '/user')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM
-    db.init_app(app)
-    migrate.init_app(app, db)
+    # from .models import user
+    # db.init_app(app)
+    # migrate.init_app(app, db)
 
     return app
