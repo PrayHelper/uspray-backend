@@ -1,0 +1,28 @@
+services:
+  api:
+    container_name: prayhelper-server
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:5000"
+    volumes:
+      - .:/app
+    environment:
+      FLASK_APP: app
+      APP_CONFIG_FILE: config/development.py
+      FLASK_DEBUG: "true"
+    command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
+
+  db:
+    container_name: prayhelper-database
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=prayhelper
+    image: postgres:latest
+    networks:
+      - default
+    ports:
+      - "5432:5432"
+    restart: always

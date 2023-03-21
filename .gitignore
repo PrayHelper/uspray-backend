@@ -3,4 +3,5 @@ prayhelper.db
 *.pyc
 __pycache__
 migrations
-
+*.env
+postgres-data

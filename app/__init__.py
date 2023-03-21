@@ -10,7 +10,7 @@ migrate = Migrate()
 
 def create_app():
     app = Flask(__name__)
-    # app.config.from_envvar('APP_CONFIG_FILE')
+    app.config.from_envvar('APP_CONFIG_FILE')
 
     # Swagger
     authorizations = {
@@ -34,8 +34,8 @@ def create_app():
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM
-    # from .models import user
-    # db.init_app(app)
-    # migrate.init_app(app, db)
+    from .models import user
+    db.init_app(app)
+    migrate.init_app(app, db)
 
     return app
