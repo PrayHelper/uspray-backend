@@ -3,7 +3,11 @@ from flask_restx import Namespace, Resource, fields
 from flask import request, g
 import bcrypt
 import datetime
-import requests 
+import requests
+
+from app import db
+from app.models.user import User
+from app.dto.user import UserDTO 
 
 user = Namespace('user', description='user test API')
 
@@ -24,4 +28,15 @@ class SignUp(Resource):
         Signup
         """
         content = request.json
+        u = UserDTO.create_user(
+            uid=content['uid'],
+            password=content['password'],
+            name=content['name'],
+            gender=content['gender'],
+            birth=content['birth'],
+            phone=content['phone']
+        )
+        print(u)
         return {'message': 'Hello World'}
+    
+
