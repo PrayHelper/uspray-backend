@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: prayhelper:latest
     ports:
       - "8000:5000"
     volumes:
@@ -17,16 +18,3 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PASSWORD: ${DB_PASSWORD}
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
-
-  db:
-    container_name: prayhelper-database
-    environment:
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-      - POSTGRES_DB=${DB_NAME}
-    image: postgres:latest
-    networks:
-      - default
-    ports:
-      - "5432:5432"
-    restart: always

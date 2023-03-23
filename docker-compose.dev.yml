@@ -4,6 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: prayhelper:latest
     ports:
       - "8000:5000"
     volumes:
