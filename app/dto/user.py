@@ -58,6 +58,13 @@ class UserDTO:
         if not password:
             raise ValueError("password must not be empty")
       
+        dupUserId = User.query.filter_by(uid=uid).first()
+        dupPhone = User.query.filter_by(phone=phone).first()
+        if dupUserId is not None:
+            raise ValueError("duplicate uid")
+        if dupPhone is not None:
+            raise ValueError("duplicate phone num")
+        
         user_dto = UserDTO(
             id=None,
             uid=uid,
