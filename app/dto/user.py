@@ -5,6 +5,7 @@ import datetime
 import uuid
 from app import db
 from app.models.user import User
+import bcrypt
 
 @dataclass
 class UserDTO:
@@ -57,7 +58,18 @@ class UserDTO:
             raise ValueError("uid must not be empty")
         if not password:
             raise ValueError("password must not be empty")
-      
+
+        # 아이디 / 폰 중복체크
+        dupUserId = User.query.filter_by(uid=uid).first()
+        dupPhone = User.query.filter_by(phone=phone).first()
+        if dupUserId is not None:
+            raise ValueError("duplicate uid")
+        if dupPhone is not None:
+            raise ValueError("duplicate phone num")
+        
+        # 비밀번호 암호화
+        password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
+
         user_dto = UserDTO(
             id=None,
             uid=uid,
