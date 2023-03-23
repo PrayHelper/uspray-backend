@@ -37,7 +37,7 @@ class SignUp(Resource):
             phone=content['phone']
         )
         print(u)
-        return {'message': 'Hello World'}
+        return {'message': '회원가입에 성공하였습니다.'}
 
 @user.route('/dup_check', methods=['GET'])
 class IdDupCheck(Resource):

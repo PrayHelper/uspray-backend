@@ -6,6 +6,8 @@ import uuid
 from app import db
 from app.models.user import User
 import bcrypt
+import re
+
 
 @dataclass
 class UserDTO:
@@ -67,6 +69,16 @@ class UserDTO:
         if dupPhone is not None:
             raise ValueError("duplicate phone num")
         
+        # 아이디 / 비밀번호 정규식 확인
+        uidPattern = '^[a-z0-9]{6,15}$'
+        pwPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}'
+        uidReg = bool(re.match(uidPattern, uid))
+        pwReg = bool(re.match(pwPattern, password))
+        if uidReg is False:
+            raise ValueError("Id must be alphanumeric with no spaces")
+        if pwReg is False:
+            raise ValueError("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number")
+
         # 비밀번호 암호화
         password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 
