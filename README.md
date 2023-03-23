@@ -5,6 +5,7 @@
 Flask
 PostgreSQL
 Swagger
+Docker
 ```
 <br />
 
@@ -42,5 +43,11 @@ Swagger
 pip freeze > requirements.txt
 
 <br /><br />
-## requirement txt upload
-pip install -r requirements.txt
+## 도커 실행 방법
+```
+docker compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.prod.yml up --build
+
+
+export DOCKER_DEFAULT_PLATFORM=linux/amd64    
+```
