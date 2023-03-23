@@ -28,6 +28,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd ~/backend
-            sudo docker run prayhelper-backend
+            ~/backend/reload.sh
 
