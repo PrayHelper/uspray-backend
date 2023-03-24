@@ -1,6 +1,6 @@
 from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
-from flask import request, g
+from flask import request, g, jsonify
 import bcrypt
 import datetime
 import requests
@@ -37,6 +37,16 @@ class SignUp(Resource):
             phone=content['phone']
         )
         print(u)
-        return {'message': 'Hello World'}
-    
+        return {'message': '회원가입에 성공하였습니다.'}
 
+@user.route('/dup_check/<string:uid>', methods=['GET'])
+class IdDupCheck(Resource):
+    @user.doc(params={'uid': 'uid'})
+    def get(self, uid):
+        """
+        IdDupCheck
+        """
+        dupUserId = User.query.filter_by(uid=uid).first()
+        if dupUserId is None:
+            return { 'dup': False }, 200
+        return { 'dup': True }, 200
