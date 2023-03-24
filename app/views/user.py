@@ -39,14 +39,13 @@ class SignUp(Resource):
         print(u)
         return {'message': '회원가입에 성공하였습니다.'}
 
-@user.route('/dup_check', methods=['GET'])
+@user.route('/dup_check/<string:uid>', methods=['GET'])
 class IdDupCheck(Resource):
     @user.doc(params={'uid': 'uid'})
-    def get(self):
+    def get(self, uid):
         """
         IdDupCheck
         """
-        uid = request.args.get('uid')
         dupUserId = User.query.filter_by(uid=uid).first()
         if dupUserId is None:
             return jsonify({'dup' : False})
