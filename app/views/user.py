@@ -48,5 +48,5 @@ class IdDupCheck(Resource):
         """
         dupUserId = User.query.filter_by(uid=uid).first()
         if dupUserId is None:
-            return jsonify({'dup' : False})
-        return jsonify({'dup' : True})
+            return { 'dup': False }, 200
+        return { 'dup': True }, 200

@@ -74,9 +74,9 @@ class UserDTO:
         pwPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}'
         uidReg = bool(re.match(uidPattern, uid))
         pwReg = bool(re.match(pwPattern, password))
-        if uidReg is False:
+        if not uidReg:
             raise ValueError("Id must be alphanumeric with no spaces")
-        if pwReg is False:
+        if not pwReg:
             raise ValueError("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number")
 
         # 비밀번호 암호화
