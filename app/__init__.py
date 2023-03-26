@@ -35,6 +35,7 @@ def create_app():
 
     # ORM
     from .models import user
+    from .models import request
     db.init_app(app)
     migrate.init_app(app, db)
 
