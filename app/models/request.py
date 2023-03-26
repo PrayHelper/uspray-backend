@@ -7,5 +7,5 @@ class Request(db.Model):
 		uid = db.Column(UUID(as_uuid=True), nullable=False)
 		target = db.Column(db.String(50), nullable=False)
 		title = db.Column(db.Text(), nullable=False)
-		createdAt = db.Column(db.DateTime(), nullabe=False)
+		createdAt = db.Column(db.DateTime(), nullable=False)
 		isShared = db.Column(db.Integer, nullable=False)
