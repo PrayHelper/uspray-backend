@@ -28,5 +28,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            ~/prayhelper-backend/run.sh
+            set +e
+            /home/prayhelper/prayhelper-backend
 
