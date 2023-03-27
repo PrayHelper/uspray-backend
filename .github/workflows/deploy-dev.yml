@@ -1,8 +1,8 @@
-name: Deploy Backend on Dev Server
+name: Deploy Frontend on Dev Server
 on:
   push:
     branches:
-      - main
+      - feature/cd
 
 jobs:
   deploy:
@@ -17,8 +17,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.PORT }}
           source: "."
-          target: "/home/prayhelper/prayhelper-backend"
+          target: ${{ secrets.PATH }}
 
       - name: Run
         uses: appleboy/ssh-action@master
@@ -28,6 +29,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /home/prayhelper/prayhelper-backend
+            cd ${{ secrets.PATH }}
             ./run.sh
-
