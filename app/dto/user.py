@@ -3,7 +3,7 @@ from typing import Union
 from uuid import UUID
 import datetime
 import uuid
-from app import db
+from app.models import db
 from app.models.user import User
 import bcrypt
 import re
@@ -32,13 +32,15 @@ class UserDTO:
     
     def save(self):
         try:
-            db.session.begin()
             user = self.to_model()
             db.session.add(user)
             db.session.commit()
             self.id = user.id
         except Exception as e:
             db.session.rollback()
+            print('rollback')
+            db.session.close()
+            print('close')
             raise e
 
     def delete(self):

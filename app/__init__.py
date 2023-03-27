@@ -5,7 +5,6 @@ from .views.main import main
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
@@ -35,6 +34,7 @@ def create_app():
 
     # ORM
     from .models import user
+    from .models import db
     db.init_app(app)
     migrate.init_app(app, db)
 

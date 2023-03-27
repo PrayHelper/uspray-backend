@@ -24,7 +24,7 @@ services:
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=prayhelper
       - DOCKER_DEFAULT_PLATFORM=linux/amd64
-    image: postgres:latest
+    image: postgres
     networks:
       - default
     ports:

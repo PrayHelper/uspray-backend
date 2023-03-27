@@ -18,3 +18,4 @@ services:
       DB_HOST: ${DB_HOST}
       DB_PASSWORD: ${DB_PASSWORD}
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
+    

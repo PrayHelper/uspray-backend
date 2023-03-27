@@ -1,6 +1,7 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from app import db
+from app.models import db
+import datetime
 
 class User(db.Model):
 		id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
@@ -10,3 +11,4 @@ class User(db.Model):
 		gender = db.Column(db.String(10), nullable=False)
 		birth = db.Column(db.DateTime(), nullable=False)
 		phone = db.Column(db.String(20), unique=True, nullable=False)
+		created_at = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now())

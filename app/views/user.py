@@ -7,7 +7,7 @@ import requests
 import jwt
 import os
 
-from app import db
+from app.models import db
 from app.models.user import User
 from app.dto.user import UserDTO 
 
@@ -48,16 +48,16 @@ class SignUp(Resource):
 
 @user.route('/dup_check', methods=['GET'])
 class IdDupCheck(Resource):
-    @user.doc(params={'uid': 'uid'})
+    @user.doc(params={'id': 'id'})
     def get(self):
         """
         IdDupCheck
         """
-        uid = request.args.get('uid')
-        dupUserId = User.query.filter_by(uid=uid).first()
+        id = request.args.get('id')
+        dupUserId = User.query.filter_by(uid=id).first()
         if dupUserId is None:
-            return jsonify({'dup' : False})
-        return jsonify({'dup' : True})
+            return {'dup' : False}
+        return {'dup' : True}
 
 
 @user.route('/login', methods=['POST'])
