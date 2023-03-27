@@ -29,13 +29,15 @@ def create_app():
         security='basic'
     )
     from .views.user import user
+    from .views.pray import pray
     api.add_namespace(main, '')
     api.add_namespace(user, '/user')
+    api.add_namespace(pray, '/pray')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM
     from .models import user
-    from .models import prayrequest
+    #from .models import pray
     db.init_app(app)
     migrate.init_app(app, db)
 
