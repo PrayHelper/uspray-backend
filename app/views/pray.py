@@ -17,7 +17,7 @@ prayListModel = pray.model('Pray', {
     'title': fields.String(required=True, description='pray title'),
 })
 
-@pray.route('/list/<uuid:uid>', methods=['GET'])
+@pray.route('/list/<string:uid>', methods=['GET'])
 class Pray(Resource):
     @pray.doc(params={'uid': 'uuid'})
     @pray.response(200, 'Success', prayListModel)
@@ -61,4 +61,4 @@ class Pray(Resource):
 						'title': '기도합시다'
 					}
 				]
-        return jsonify(prayList), 200
+        return prayList, 200
