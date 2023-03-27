@@ -47,7 +47,13 @@ pip freeze > requirements.txt
 ```
 docker compose -f docker-compose.dev.yml up --build
 docker compose -f docker-compose.prod.yml up --build
+```
 
-
-export DOCKER_DEFAULT_PLATFORM=linux/amd64    
+## 배포 환경에서 migration 방법
+새 터미널 열고 가상환경 켜기 
+```
+config/development.py의  host='db:5432'를  host='localhost:5432'로 바꾸기
+export DOCKER_DEFAULT_PLATFORM=linux/amd64하기 
+flask db migrate
+flask db upgrade하기 
 ```
