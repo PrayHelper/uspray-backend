@@ -46,7 +46,7 @@ class SignUp(Resource):
         return {'message': '회원가입에 성공하였습니다.'}
 
 
-@user.route('/dup_check', methods=['GET'])
+@user.route('/dup_check/<string:uid>', methods=['GET'])
 class IdDupCheck(Resource):
     @user.doc(params={'id': 'id'})
     def get(self):
