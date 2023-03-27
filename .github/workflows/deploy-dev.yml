@@ -29,5 +29,5 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             set +e
-            /home/prayhelper/prayhelper-backend
+            /home/prayhelper/prayhelper-backend/run.sh
 
