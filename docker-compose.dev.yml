@@ -12,7 +12,7 @@ services:
     environment:
       FLASK_APP: app
       APP_CONFIG_FILE: config/development.py
-      FLASK_DEBUG: "true"
+      FLASK_DEBUG: 1
       DATABASE_URL: postgresql://postgres:postgres@db:5432/prayhelper
       DOCKER_DEFAULT_PLATFORM: linux/amd64
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
