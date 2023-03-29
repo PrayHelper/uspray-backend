@@ -1,8 +1,8 @@
-name: Deploy Frontend on Dev Server
+name: Deploy Backend on Dev Server
 on:
   push:
     branches:
-      - feature/cd
+      - main
 
 jobs:
   deploy:
