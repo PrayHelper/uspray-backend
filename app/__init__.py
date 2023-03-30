@@ -7,8 +7,6 @@ from .api.pray import pray
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 
-migrate = Migrate()
-
 def create_app():
     app = Flask(__name__)
     app.config.from_envvar('APP_CONFIG_FILE')
@@ -39,6 +37,7 @@ def create_app():
     from .models import db
     #from .models import pray
     db.init_app(app)
-    migrate.init_app(app, db)
+    migrate = Migrate(app, db)
+    # migrate.init_app(app, db)
 
     return app

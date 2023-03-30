@@ -4,8 +4,8 @@ from flask import request, g, jsonify
 
 from app.models import db
 from app.models.user import User
-#from app.models.pray import Pray
-#from app.dto.pray import PrayDTO 
+from app.models.pray import Pray
+# from app.dto.pray import PrayDTO 
 
 pray = Namespace('pray', description='pray test API')
 
@@ -17,6 +17,11 @@ prayListModel = pray.model('Pray', {
     'title': fields.String(required=True, description='pray title'),
 })
 
+@pray.route('/teest', methods=['GET'])
+class Pray(Resource):
+    def get(self):
+        a = Pray.query.filter_by(id=1).first()
+        return a
 
 @pray.route('/list', methods=['GET'])
 class Pray(Resource):
@@ -25,10 +30,10 @@ class Pray(Resource):
         """
         Get Pray List
         """
-        # user = User.query.filter_by(id=uid).first()
-        # if not user:
-        #     return { 'message': '사용자가 존재하지 않습니다.' }, 400
-        # prayList = user.pray_set
+        user = User.query.filter_by(id=uid).first()
+        if not user:
+            return { 'message': '사용자가 존재하지 않습니다.' }, 400
+        prayList = user.pray_set
         prayList = [
           { 'id': 1, 
 						'user_id': 'uuid',

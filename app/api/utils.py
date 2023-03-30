@@ -21,8 +21,9 @@ def send(phone):
       string_to_sign = "POST " + uri + "\n" + timestamp + "\n" + access_key
       signature = make_signature(string_to_sign)
       verify_code = random.randint(100000, 999999)
-    except:
-      return { 'res' : 'error occured at send' }, 400
+    except Exception as e:
+      print(e)
+      return { 'res' : 'error occured at send' + e }, 400
 
     headers = {
         'Content-Type': "application/json; charset=UTF-8",
