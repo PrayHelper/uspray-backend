@@ -1,6 +1,6 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from app.models import db
+from . import db
 import datetime
 
 class User(db.Model):
