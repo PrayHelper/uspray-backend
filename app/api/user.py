@@ -35,20 +35,24 @@ class SignUp(Resource):
         Signup
         """
         content = request.json
-        u = UserDTO.create_user(
-            uid=content['id'],
-            password=content['password'],
-            name=content['name'],
-            gender=content['gender'],
-            birth=content['birth'],
-            phone=content['phone']
-        )
+        try:
+            u = UserDTO.create_user(
+                uid=content['id'],
+                password=content['password'],
+                name=content['name'],
+                gender=content['gender'],
+                birth=content['birth'],
+                phone=content['phone']
+            )
+        except Exception as e:
+            print(e)
+            return {'message': '회원가입에 실패하였습니다.'}, 400
         payload = {
-            'id': u.uid,
+            'id': u.id,
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
         }
         token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-        return {'message': '회원가입에 성공하였습니다.', 'access_token': token}, 200
+        return {'access_token': token}, 200
 
 
 @user.route('/dup_check/<string:id>', methods=['GET'])
@@ -86,6 +90,6 @@ class Login(Resource):
                 'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
             }
             token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-            return { 'message' : '로그인에 성공하였습니다.', 'access_token': token }, 200
+            return { 'access_token': token }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
