@@ -26,5 +26,6 @@ class SmsSend(Resource):
             try:
                 verify_code = send(phone)
             except Exception as e:
-                return {'message': 'SMS 전송에 실패하였습니다.' + e}, 400
+                print(e)
+                return {'message': 'SMS 전송에 실패하였습니다.'}, 400
         return verify_code

@@ -23,7 +23,7 @@ def send(phone):
       verify_code = random.randint(100000, 999999)
     except Exception as e:
       print(e)
-      return { 'res' : 'error occured at send' + e }, 400
+      return { 'res' : 'error occured at send' }, 400
 
     headers = {
         'Content-Type': "application/json; charset=UTF-8",
