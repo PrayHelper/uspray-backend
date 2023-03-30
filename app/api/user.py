@@ -70,7 +70,7 @@ class Login(Resource):
         """
         content = request.json
 
-        u = User.query.filter_by(uid=content['uid']).first
+        u = User.query.filter_by(uid=content['uid']).first()
 
         if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
