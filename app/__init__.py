@@ -13,10 +13,13 @@ def create_app():
 
     # Swagger
     authorizations = {
-        'basic': {
-            'type': 'basic',
+        'apikey': {
+            'type': 'apiKey',
             'in': 'header',
-            'name': 'ACCESS-KEY'
+            'name': 'Authorization',
+            'description': "Type in the *'Value'* input box below: **'Bearer &lt;JWT&gt;'**, where JWT is the token"
+
+
         }
     }
     api = Api(
@@ -25,7 +28,8 @@ def create_app():
         title='API',
         description='API 명세서 입니다.',
         prefix='/api',
-        security='basic'
+        authorizations=authorizations,
+        security='apikey'
     )
  
     api.add_namespace(admin, '')
