@@ -1,8 +1,8 @@
-name: Deploy Frontend on Dev Server
+name: Deploy Backend on Development Server
 on:
   push:
     branches:
-      - feature/cd
+      - main
 
 jobs:
   deploy:
@@ -11,7 +11,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Deploy
+      - name: Send
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -21,7 +21,7 @@ jobs:
           source: "."
           target: ${{ secrets.PATH }}
 
-      - name: Run
+      - name: Deploy
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
