@@ -59,7 +59,7 @@ class UserDTO:
         새로운 유저를 생성합니다.
         """
         if not uid:
-            raise ValueError("uid must not be empty")
+            raise ValueError("id must not be empty")
         if not password:
             raise ValueError("password must not be empty")
 

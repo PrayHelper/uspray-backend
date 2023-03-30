@@ -1,6 +1,6 @@
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
-from app import db
+from . import db
 
 class Pray(db.Model):
 		id = db.Column(db.Integer, primary_key=True)
