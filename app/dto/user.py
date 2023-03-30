@@ -35,7 +35,7 @@ class UserDTO:
             user = self.to_model()
             db.session.add(user)
             db.session.commit()
-            self.id = user.id
+            self = user
         except Exception as e:
             db.session.rollback()
             print('rollback')
@@ -82,12 +82,12 @@ class UserDTO:
             raise ValueError("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number")
 
         # 비밀번호 암호화
-        password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
+        new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 
         user_dto = UserDTO(
             id=None,
             uid=uid,
-            password=password,
+            password=new_password.decode('UTF-8'),
             name=name,
             gender=gender,
             birth=birth,
