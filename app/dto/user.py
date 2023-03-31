@@ -27,7 +27,8 @@ class UserDTO:
             name=self.name,
             gender=self.gender,
             birth=self.birth,
-            phone=self.phone
+            phone=self.phone,
+            created_at=datetime.datetime.now()
         )
     
     def save(self):
@@ -38,9 +39,7 @@ class UserDTO:
             self = user
         except Exception as e:
             db.session.rollback()
-            print('rollback')
             db.session.close()
-            print('close')
             raise e
 
     def delete(self):
@@ -49,7 +48,6 @@ class UserDTO:
             db.session.delete(self)
             db.session.commit()
         except Exception as e:
-            print(222222)
             db.session.rollback()
             raise e
 
@@ -63,15 +61,13 @@ class UserDTO:
         if not password:
             raise ValueError("password must not be empty")
 
-        # 아이디 / 폰 중복체크
         dupUserId = User.query.filter_by(uid=uid).first()
         dupPhone = User.query.filter_by(phone=phone).first()
         if dupUserId is not None:
             raise ValueError("duplicate uid")
         if dupPhone is not None:
             raise ValueError("duplicate phone num")
-        
-        # 아이디 / 비밀번호 정규식 확인
+       
         uidPattern = '^[a-z0-9]{6,15}$'
         pwPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}'
         uidReg = bool(re.match(uidPattern, uid))
@@ -81,7 +77,6 @@ class UserDTO:
         if not pwReg:
             raise ValueError("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number")
 
-        # 비밀번호 암호화
         new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 
         user_dto = UserDTO(
