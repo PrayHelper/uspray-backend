@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource
 from .utils import send
+import datetime
 
 
 admin = Namespace('admin', description='admin stest API')
@@ -28,4 +29,4 @@ class SmsSend(Resource):
             except Exception as e:
                 print(e)
                 return {'message': 'SMS 전송에 실패하였습니다.'}, 400
-        return verify_code
+        return { 'code': verify_code, 'send_time': datetime.datetime.now() }
