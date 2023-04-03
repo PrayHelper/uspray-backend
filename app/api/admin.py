@@ -29,4 +29,4 @@ class SmsSend(Resource):
             except Exception as e:
                 print(e)
                 return {'message': 'SMS 전송에 실패하였습니다.'}, 400
-        return { 'code': verify_code, 'send_time': datetime.datetime.now() }
+        return { 'code': verify_code, 'send_time': datetime.datetime.now().strftime('%Y-%m-%d') }
