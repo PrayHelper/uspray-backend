@@ -17,5 +17,6 @@ services:
       DB_USER: ${DB_USER}
       DB_HOST: ${DB_HOST}
       DB_PASSWORD: ${DB_PASSWORD}
+      DOCKER_DEFAULT_PLATFORM: linux/amd64
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
     

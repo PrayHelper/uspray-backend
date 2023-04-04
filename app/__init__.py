@@ -3,6 +3,7 @@ from flask_restx import Api
 from .api.admin import admin
 from .api.user import user as user_api
 from .api.pray import pray
+import os
 
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
@@ -11,7 +12,7 @@ from flask_cors import CORS
 def create_app():
     app = Flask(__name__)
     app.config.from_envvar('APP_CONFIG_FILE')
-    CORS(app, resources={r'*': {'origins': ['http://localhost:3000', app.config.from_envvar('CORS_ORIGIN')]}})
+    CORS(app, resources={r'*': {'origins': ['http://localhost:3000', os.getenv('CORS_ORIGIN')]}})
 
     # Swagger
     authorizations = {
