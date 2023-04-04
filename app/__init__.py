@@ -6,10 +6,12 @@ from .api.pray import pray
 
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
+from flask_cors import CORS
 
 def create_app():
     app = Flask(__name__)
     app.config.from_envvar('APP_CONFIG_FILE')
+    CORS(app, resources={r'*': {'origins': ['http://localhost:3000', app.config.from_envvar('CORS_ORIGIN')]}})
 
     # Swagger
     authorizations = {
@@ -18,8 +20,6 @@ def create_app():
             'in': 'header',
             'name': 'Authorization',
             'description': "Type in the *'Value'* input box below: **'Bearer &lt;JWT&gt;'**, where JWT is the token"
-
-
         }
     }
     api = Api(
