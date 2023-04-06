@@ -14,17 +14,17 @@ from app.dto.user import UserDTO
 user = Namespace('user', description='user test API')
 
 userModel = user.model('User', {
-    'id': fields.String(required=True, description='user id'),
-    'password': fields.String(required=True, description='user password'),
-    'name': fields.String(required=True, description='user name'),
-    'gender': fields.String(required=True, description='user gender'),
-    'birth': fields.Date(required=True, description='user birth'),
-    'phone': fields.String(required=True, description='user phone'),
+    'id': fields.String(required=True, default='userid', description='user id'),
+    'password': fields.String(required=True, default='password', description='user password'),
+    'name': fields.String(required=True, default='name', description='user name'),
+    'gender': fields.String(required=True, default='여', description='user gender'),
+    'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
+    'phone': fields.String(required=True, default='01011112222', description='user phone'),
 })
 
 loginModel = user.model('Login', {
-    'id': fields.String(required=True, decription='user id'),
-    'password': fields.String(required=True, decription='user password')
+    'id': fields.String(required=True, default='userid', decription='user id'),
+    'password': fields.String(required=True, default='password', decription='user password')
 })
 
 @user.route('/signup', methods=['POST'])
