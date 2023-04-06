@@ -69,7 +69,7 @@ class UserDTO:
             raise ValueError("duplicate phone num")
        
         uidPattern = '^[a-z0-9]{6,15}$'
-        pwPattern = '^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[$@$!%*?&])[A-Za-z\d$@$!%*?&]{8,}'
+        pwPattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
         uidReg = bool(re.match(uidPattern, uid))
         pwReg = bool(re.match(pwPattern, password))
         if not uidReg:
