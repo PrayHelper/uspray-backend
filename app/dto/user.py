@@ -70,13 +70,16 @@ class UserDTO:
        
         uidPattern = '^[a-z0-9]{6,15}$'
         pwPattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        phonePattern = r'^01([0|1|6|7|8|9])-?([0-9]{3,4})-?([0-9]{4})$'
         uidReg = bool(re.match(uidPattern, uid))
         pwReg = bool(re.match(pwPattern, password))
+        phoneReg = bool(re.match(phonePattern, phone))
         if not uidReg:
             raise ValueError("Id must be alphanumeric with no spaces")
         if not pwReg:
             raise ValueError("Password must be at least 8 characters long, contain at least one uppercase letter, one lowercase letter, and one number")
-
+        if not phoneReg:
+            raise ValueError("전화번호 형식이 잘못되었습니다.")
         new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 
         user_dto = UserDTO(
