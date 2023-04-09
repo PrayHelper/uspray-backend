@@ -33,10 +33,10 @@ export DOCKER_DEFAULT_PLATFORM=linux/amd64
 <br /><br />
 ## ❗️ 변수명 작성 방법
 클래스나 메소드명은 파스칼 표기법을 따른다.(모든 단어에서 첫 문자는 대문자 나머지는 소문자)
-> ex) HelloWordl, NameViva
+> ex) HelloWorld, NameViva
 
-변수, 파라미터 등은 카멜 표기법을 따른다.
-> ex) helloWorld, nameViva
+변수, 파라미터 등은 snake 표기법을 따른다.(파이썬이라서)
+> ex) hello_world, name_viva
 
 메서드 이름은 동사/전치사로 시작한다.
 > ex) countNumber, withUserId
