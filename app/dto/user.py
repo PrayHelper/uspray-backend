@@ -79,7 +79,6 @@ class UserDTO:
         phoneReg = bool(re.match(phonePattern, phone))
         if not uidReg:
             raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
-        print(pwReg, 'pwReg')
         if not pwReg:
             raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
         if not phoneReg:

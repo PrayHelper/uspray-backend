@@ -30,7 +30,7 @@ Docker
 > ex) HelloWordl, NameViva
 
 변수, 파라미터 등은 카멜 표기법을 따른다.
-> ex) helloWordl, nameViva
+> ex) helloWorld, nameViva
 
 메서드 이름은 동사/전치사로 시작한다.
 > ex) countNumber, withUserId
