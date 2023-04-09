@@ -6,8 +6,6 @@ import datetime
 import uuid
 from app.models import db
 from app.models.pray import Pray
-import bcrypt
-import re
 
 @dataclass
 class PrayDTO:

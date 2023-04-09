@@ -1,15 +1,14 @@
 from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
-from flask import request, g, jsonify
+from flask import request
 import bcrypt
 import datetime
-import requests
 import jwt
 import os
 
 from app.models import db
 from app.models.user import User
-from app.dto.user import UserDTO 
+from app.do.user import UserDTO, UserDAO
 
 user = Namespace('user', description='user test API')
 
@@ -35,7 +34,7 @@ class SignUp(Resource):
         Signup
         """
         content = request.json
-        u = UserDTO.create_user(
+        user_dto = UserDTO(
             uid=content['id'],
             password=content['password'],
             name=content['name'],
@@ -43,8 +42,9 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
+        user_dao = UserDAO.create_user(user_dto)
         payload = {
-            'id': str(u.id),
+            'id': str(user_dao.id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
         }
         token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
