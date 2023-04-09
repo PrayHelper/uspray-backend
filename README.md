@@ -22,8 +22,8 @@ export DOCKER_DEFAULT_PLATFORM=linux/amd64
 
 <br /><br />
 ## ❗️ 유의할 점
-- [ ] 애플리케이션 팩토리 사용하기
-- [ ] config 패키지화 하기
+- [X] 애플리케이션 팩토리 사용하기
+- [X] config 패키지화 하기
 - [X] 뷰 데코레이터 사용하기 
 - [X] 에러핸들러 사용하기
 - [ ] TDD 도입하기
