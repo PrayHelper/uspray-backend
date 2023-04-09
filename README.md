@@ -10,16 +10,22 @@ Docker
 <br />
 
 ## ❓ How to run server
-1. 가상환경 설정
-2. 환경변수 설정
-3. flask run
+```
+docker compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.prod.yml up --build
+```
+에러가 난다? 
+```
+export DOCKER_DEFAULT_PLATFORM=linux/amd64
+``` 
+
 
 <br /><br />
 ## ❗️ 유의할 점
 - [ ] 애플리케이션 팩토리 사용하기
 - [ ] config 패키지화 하기
-- [ ] 뷰 데코레이터 사용하기 
-- [ ] 에러핸들러 사용하기
+- [X] 뷰 데코레이터 사용하기 
+- [X] 에러핸들러 사용하기
 - [ ] TDD 도입하기
 - [ ] Type int 사용하기
 - [ ] DTO & DAO 사용하기
@@ -43,11 +49,6 @@ Docker
 pip freeze > requirements.txt
 
 <br /><br />
-## 도커 실행 방법
-```
-docker compose -f docker-compose.dev.yml up --build
-docker compose -f docker-compose.prod.yml up --build
-```
 
 ## 배포 환경에서 migration 방법
 새 터미널 열고 가상환경 켜기 
