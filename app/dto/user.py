@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Union
 from uuid import UUID
+from app.error_handler import SignUpFail
 import datetime
 import uuid
 from app.models import db
@@ -57,38 +58,39 @@ class UserDTO:
         새로운 유저를 생성합니다.
         """
         if not uid:
-            raise ValueError("아이디는 필수 입력 항목입니다.")
+            raise SignUpFail("아이디는 필수 입력 항목입니다.")
         if not password:
-            raise ValueError("비밀번호는 필수 입력 항목입니다.")
+            raise SignUpFail("비밀번호는 필수 입력 항목입니다.")
         if not name:
-            raise ValueError("이름은 필수 입력 항목입니다.")
+            raise SignUpFail("이름은 필수 입력 항목입니다.")
         if not gender:
-            raise ValueError("성별은 필수 입력 항목입니다.")
+            raise SignUpFail("성별은 필수 입력 항목입니다.")
         if not birth:
-            raise ValueError("생일은 필수 입력 항목입니다.")
+            raise SignUpFail("생일은 필수 입력 항목입니다.")
         if not phone:
-            raise ValueError("전화번호는 필수 입력 항목입니다.")
+            raise SignUpFail("전화번호는 필수 입력 항목입니다.")
 
        
         uidPattern = '^[a-z0-9]{6,15}$'
-        pwPattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        pwPattern = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,16}$'
         phonePattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
         uidReg = bool(re.match(uidPattern, uid))
         pwReg = bool(re.match(pwPattern, password))
         phoneReg = bool(re.match(phonePattern, phone))
         if not uidReg:
-            raise ValueError("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫자)")
+            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+        print(pwReg, 'pwReg')
         if not pwReg:
-            raise ValueError("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
         if not phoneReg:
-            raise ValueError("전화번호 형식이 잘못되었습니다.")
+            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
 
         dupUserId = User.query.filter_by(uid=uid).first()
         dupPhone = User.query.filter_by(phone=phone).first()
         if dupUserId is not None:
-            raise ValueError("중복된 아이디가 존재합니다.")
+            raise SignUpFail("중복된 아이디가 존재합니다.")
         if dupPhone is not None:
-            raise ValueError("중복된 전화번호가 존재합니다.")
+            raise SignUpFail("중복된 전화번호가 존재합니다.")
         
         new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 

@@ -53,7 +53,7 @@ class SignUp(Resource):
 
 @user.route('/dup_check/<string:id>', methods=['GET'])
 class IdDupCheck(Resource):
-    @user.doc(params={'id': 'id'})
+    @user.doc(params={'id': 'uos920'})
     def get(self, id):
         """
         IdDupCheck
