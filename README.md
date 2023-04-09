@@ -28,7 +28,7 @@ export DOCKER_DEFAULT_PLATFORM=linux/amd64
 - [X] 에러핸들러 사용하기
 - [ ] TDD 도입하기
 - [ ] Type int 사용하기
-- [ ] DTO & DAO 사용하기
+- [X] DTO & DAO 사용하기
 
 <br /><br />
 ## ❗️ 변수명 작성 방법
