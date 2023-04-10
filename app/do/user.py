@@ -100,7 +100,7 @@ class UserDAO:
         새로운 유저를 생성합니다.
         """
         uid_pattern = r'^[a-z0-9]{6,15}$'
-        pw_pattern = r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[$@$!%*#?&])[A-Za-z\d$@$!%*#?&]{8,16}$'
+        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
         phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
         uid_reg = bool(re.match(uid_pattern, user_dto.uid))
         pw_reg = bool(re.match(pw_pattern, user_dto.password))
