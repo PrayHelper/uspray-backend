@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from typing import Union
 from uuid import UUID
-from app.error_handler import SignUpFail
+from app.utils.error_handler import SignUpFail
 import datetime
 import uuid
 from app.models import db
 from app.models.user import User
 import bcrypt
 import re
-
 
 @dataclass
 class UserDTO:

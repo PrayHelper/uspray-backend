@@ -25,6 +25,7 @@ class SignUpFail(CustomUserError):
     def to_dict(self):
         return self.rv
 
+
 def handle_custom_user_error(error):
     response = jsonify(error.to_dict())
     response.status_code = error.status_code
