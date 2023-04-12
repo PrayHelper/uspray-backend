@@ -122,8 +122,9 @@ class StorageDAO:
             db.session.commit()
             self = storage
         except Exception as e:
-            #p = Pray.query.filter(self.pray_id)
+            pray = Pray.query.filter_by(pray_id=self.pray_id).first()
             db.session.rollback()
+            db.session.delete(pray)
             db.session.close()
             raise e
 
