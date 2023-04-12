@@ -9,7 +9,7 @@ import os
 from app.models import db
 from app.models.user import User
 from app.models.pray import Pray
-from app.dto.pray import PrayDTO 
+from app.utils.pray import PrayDTO 
 
 pray = Namespace('pray', description='pray test API')
 
