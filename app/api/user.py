@@ -8,7 +8,7 @@ import os
 
 from app.models import db
 from app.models.user import User
-from app.do.user import UserDTO, UserDAO
+from app.utils.user import UserDTO, UserDAO
 
 user = Namespace('user', description='user test API')
 
