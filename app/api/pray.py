@@ -36,11 +36,9 @@ class Pray(Resource):
 		storage_dto = StorageDTO(
 			user_id=user_id,
 			pray_id=pray_dao.id,
-			pray_cnt=0,
 			deadline=content['deadline']
 		)
 		storage_dao = StorageDAO.create_storage(storage_dto)
-		# storage를 실패하면 pray를 삭제해야한다.
 		return { 'message': 'success' }, 200
 
 		

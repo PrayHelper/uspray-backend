@@ -76,7 +76,8 @@ class UserDAO:
             user = self.to_model()
             db.session.add(user)
             db.session.commit()
-            self = user
+            self.id = user.id
+
         except Exception as e:
             db.session.rollback()
             db.session.close()

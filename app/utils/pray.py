@@ -45,7 +45,7 @@ class PrayDAO:
             pray = self.to_model()
             db.session.add(pray)
             db.session.commit()
-            self = pray
+            self.id = pray.id
         except Exception as e:
             db.session.rollback()
             db.session.close()
@@ -88,17 +88,14 @@ class StorageDTO:
     pray_cnt: int
     deadline: datetime
 
-    def __init__(self, pray_id, user_id, pray_cnt, deadline):
+    def __init__(self, pray_id, user_id, deadline):
         self.user_id = user_id
         self.pray_id = pray_id
-        self.pray_cnt = pray_cnt
         self.deadline = deadline
         if not user_id:
             raise StorageFail('user_id is required')
         if not pray_id:
             raise StorageFail('pray_id is required')
-        if not pray_cnt:
-            raise StorageFail('pray_cnt is required')
         if not deadline:
             raise StorageFail('deadline is required')
 
@@ -107,7 +104,6 @@ class StorageDAO:
     id: Union[int, None]
     pray_id: int
     user_id: UUID
-    pray_cnt: int
     deadline: datetime
 
     def to_model(self) -> Storage:
@@ -115,7 +111,6 @@ class StorageDAO:
             id=self.id,
             pray_id=self.pray_id,
             user_id=self.user_id,
-            pray_cnt=self.pray_cnt,
             deadline=self.deadline,
             created_at=datetime.datetime.now()
         )
@@ -130,7 +125,6 @@ class StorageDAO:
             #p = Pray.query.filter(self.pray_id)
             db.session.rollback()
             db.session.close()
-
             raise e
 
     def delete(self):
@@ -151,7 +145,6 @@ class StorageDAO:
             id=None,
             pray_id=storage_dto.pray_id,
             user_id=storage_dto.user_id,
-            pray_cnt=storage_dto.pray_cnt,
             deadline=storage_dto.deadline,
         )
         storage_dao.save()
