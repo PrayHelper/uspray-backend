@@ -1,8 +1,8 @@
 from flask import Flask
 from flask_restx import Api
 from .api.admin import admin
-from .api.user import user as user_api
-from .api.pray import pray as pray_api
+from .api.user import user
+from .api.pray import pray
 import os
 
 from flask_migrate import Migrate
@@ -34,14 +34,12 @@ def create_app():
     )
  
     api.add_namespace(admin, '')
-    api.add_namespace(user_api, '/user')
-    api.add_namespace(pray_api, '/pray')
+    api.add_namespace(user, '/user')
+    api.add_namespace(pray, '/pray')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM
     from .models import db
-    from .models import user
-    from .models import pray
     db.init_app(app)
     migrate = Migrate(app, db)
     # migrate.init_app(app, db)

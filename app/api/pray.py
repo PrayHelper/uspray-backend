@@ -1,15 +1,12 @@
 from app.decorators.login_required import login_required
-from app.dto.pray import PrayDTO
-from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
-from flask import request, g, jsonify
+from flask import request, g
 import jwt
 import os
 
 from app.models import db
-from app.models.user import User
 from app.models.pray import Pray
-from app.utils.pray import PrayDTO 
+from app.utils.pray import PrayDAO, PrayDTO, StorageDAO, StorageDTO
 
 pray = Namespace('pray', description='pray test API')
 
@@ -20,24 +17,30 @@ prayListModel = pray.model('Pray', {
 })
 
 @pray.route('', methods=['POST'])
-@login_required
 class Pray(Resource):
 	@pray.expect(prayListModel)
+	@login_required
 	def post(self):
 		"""
 		Pray Post
 		"""
-		access_token = request.headers.get("Authorization")
-		payload = jwt.decode(access_token, os.getenv('SECRET_KEY'), algorithm="HS256")
-		user_uuid = payload.id
-
+		user_id = g.user_id
 		content = request.json
-		u = PrayDTO.create_pray(
-			id=user_uuid,
+
+		pray_dto = PrayDTO(
+			user_id=user_id,
 			target=content['target'],
 			title=content['title']
 		)
-		# if u가 잘 생성됐을때 보관함 DTO 생성?
+		pray_dao = PrayDAO.create_pray(pray_dto)
+		storage_dto = StorageDTO(
+			user_id=user_id,
+			pray_id=pray_dao.id,
+			pray_cnt=0,
+			deadline=content['deadline']
+		)
+		storage_dao = StorageDAO.create_storage(storage_dto)
+		# storage를 실패하면 pray를 삭제해야한다.
 		return { 'message': 'success' }, 200
 
 		

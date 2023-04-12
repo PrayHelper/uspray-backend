@@ -65,6 +65,12 @@ class PrayDAO:
         """
         새로운 기도제목을 생성합니다.
         """
+
+        if pray_dto.title == "":
+            raise PrayFail("기도제목이 비었습니다.")
+        if pray_dto.target == "":
+            raise PrayFail("기도대상이 비었습니다.")
+
         pray_dao = PrayDAO(
             id=None,
             user_id=pray_dto.user_id,
@@ -82,12 +88,11 @@ class StorageDTO:
     pray_cnt: int
     deadline: datetime
 
-    def __init__(self, pray_id, user_id, pray_cnt, deadline, created_at):
+    def __init__(self, pray_id, user_id, pray_cnt, deadline):
         self.user_id = user_id
         self.pray_id = pray_id
         self.pray_cnt = pray_cnt
         self.deadline = deadline
-        self.created_at = created_at
         if not user_id:
             raise StorageFail('user_id is required')
         if not pray_id:
@@ -122,8 +127,10 @@ class StorageDAO:
             db.session.commit()
             self = storage
         except Exception as e:
+            #p = Pray.query.filter(self.pray_id)
             db.session.rollback()
             db.session.close()
+
             raise e
 
     def delete(self):
