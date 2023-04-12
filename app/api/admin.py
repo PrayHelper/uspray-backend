@@ -6,7 +6,7 @@ import datetime
 
 admin = Namespace('admin', description='admin stest API')
 sms_string = admin.parser()
-sms_string.add_argument('phone', required=True, help='phone')
+sms_string.add_argument('phone', required=True, help='01012345678')
 
 @admin.route('')
 class Main(Resource):

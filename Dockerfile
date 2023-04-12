@@ -9,7 +9,7 @@ COPY requirements.txt requirements.txt
 RUN pip3 install -r requirements.txt
 
 ENV FLASK_APP=app
-ENV APP_CONFIG_FILE=config/development.py
 ENV FLASK_DEBUG=true
+ENV DOCKER_DEFAULT_PLATFORM=linux/amd64
 COPY . .
 CMD [ "python3", "-m" , "flask", "run"]

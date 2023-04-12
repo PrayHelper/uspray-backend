@@ -46,4 +46,8 @@ def create_app():
     migrate = Migrate(app, db)
     # migrate.init_app(app, db)
 
+    # Error Handler
+    from .utils.error_handler import CustomUserError, handle_custom_user_error
+    app.register_error_handler(CustomUserError, handle_custom_user_error)
+
     return app
