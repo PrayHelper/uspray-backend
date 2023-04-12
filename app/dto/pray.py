@@ -42,7 +42,7 @@ class PrayDTO:
             raise e
 
     @staticmethod
-    def create_pray(user_id: UUID, target: str, title: str) -> 'PrayDTO':
+    def create_pray(user_id: str, target: str, title: str) -> 'PrayDTO':
         """
         새로운 기도를 생성합니다.
         """
@@ -53,6 +53,7 @@ class PrayDTO:
         if not title:
             raise ValueError("기도 제목은 필수 입력 항목입니다.")
         
+				#user_id가 user테이블에 존재하는지 확인해야하나?
         pray_dto = PrayDTO(
             id=None,
             user_id=user_id,

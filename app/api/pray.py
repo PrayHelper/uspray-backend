@@ -1,25 +1,43 @@
+from app.decorators.login_required import login_required
+from app.dto.pray import PrayDTO
 from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
 from flask import request, g, jsonify
+import jwt
+import os
 
 from app.models import db
 from app.models.user import User
 from app.models.pray import Pray
-# from app.dto.pray import PrayDTO 
+from app.dto.pray import PrayDTO 
 
 pray = Namespace('pray', description='pray test API')
 
 prayListModel = pray.model('Pray', {
-    'id': fields.Integer(required=True, description='pray id'),
-    'user_id': fields.String(required=True, description='user uuid'),
+    'target': fields.String(required=True, default='이수빈', description='pray target'),
+    'title': fields.String(required=True, default='기도합니다', description='pray title'),
     'deadline': fields.Date(required=True, description='pray deadline'),
-    'target': fields.String(required=True, description='pray target'),
-    'title': fields.String(required=True, description='pray title'),
 })
 
-@pray.route('/', methods=['POST'])
+@pray.route('', methods=['POST'])
+@login_required
 class Pray(Resource):
+	@pray.expect(prayListModel)
 	def post(self):
+		"""
+		Pray Post
+		"""
+		access_token = request.headers.get("Authorization")
+		payload = jwt.decode(access_token, os.getenv('SECRET_KEY'), algorithm="HS256")
+		user_uuid = payload.id
+
+		content = request.json
+		u = PrayDTO.create_pray(
+			id=user_uuid,
+			target=content['target'],
+			title=content['title']
+		)
+		# if u가 잘 생성됐을때 보관함 DTO 생성?
 		return { 'message': 'success' }, 200
 
 		
