@@ -1,12 +1,7 @@
 from app.decorators.login_required import login_required
 from flask_restx import Namespace, Resource, fields
 from flask import request, g
-import jwt
-import os
-
-from app.models import db
-from app.models.pray import Pray
-from app.utils.pray import PrayDAO, PrayDTO, StorageDAO, StorageDTO
+from app.utils.pray import PrayDAO, PrayDTO, StorageDAO, StorageDTO, StorageService
 
 pray = Namespace('pray', description='pray test API')
 
@@ -38,57 +33,27 @@ class Pray(Resource):
 			pray_id=pray_dao.id,
 			deadline=content['deadline']
 		)
-		storage_dao = StorageDAO.create_storage(storage_dto)
-		return { 'message': 'success' }, 200
+		return StorageDAO.create_storage(storage_dto), 200
 
-		
-# @pray.route('/teest', methods=['GET'])
-# class Pray(Resource):
-#     def get(self):
-#         a = Pray.query.filter_by(id=1).first()
-#         return a
+@pray.route('/<int:pray_id>', methods=['GET'])
+class PrayDetail(Resource):
+	def get(self, pray_id):
+		"""
+		기도제목을 입력합니다.
+		"""
+		# TODO: @login_required 추가 후 자신의 pray인지 확인하는 로직 추가하기
+		return StorageService.get_storage(pray_id), 200
+	
+	def delete(self, pray_id):
+		"""
+		기도제목을 삭제합니다.
+		"""
+		# TODO: StorageService.delete_storage(pray_id) + @login_required 추가하기
 
-# @pray.route('/list', methods=['GET'])
-# class Pray(Resource):
-#     @pray.response(200, 'Success', prayListModel)
-#     def get(self):
-#         """
-#         Get Pray List
-#         """
-#         user = User.query.filter_by(id=uid).first()
-#         if not user:
-#             return { 'message': '사용자가 존재하지 않습니다.' }, 400
-#         prayList = user.pray_set
-#         prayList = [
-#           { 'id': 1, 
-# 						'user_id': 'uuid',
-# 						'deadline': '2023-01-02',
-# 						'target': '이수빈',
-# 						'title': '기도합시다'
-# 					},
-# 					{ 'id': 2, 
-# 						'user_id': 'uuid',
-# 						'deadline': '2023-01-03',
-# 						'target': '배서현',
-# 						'title': '파이팅'
-# 					},
-# 					{ 'id': 3, 
-# 						'user_id': 'uuid',
-# 						'deadline': '2023-01-04',
-# 						'target': '김하람',
-# 						'title': '안뇽'
-# 					},
-# 					{ 'id': 4, 
-# 						'user_id': 'uuid',
-# 						'deadline': '2023-01-05',
-# 						'target': '권은혜',
-# 						'title': '메렁'
-# 					},
-# 					{ 'id': 5, 
-# 						'user_id': 'uuid',
-# 						'deadline': '2023-01-06',
-# 						'target': '이수빈',
-# 						'title': '기도합시다'
-# 					}
-# 				]
-#         return { 'res': prayList }, 200
+	def put(self, pray_id):
+		"""
+		기도제목을 수정합니다.
+		"""
+		# TODO: StorageService.update_storage(pray_id) + @login_required 추가하기
+
+	

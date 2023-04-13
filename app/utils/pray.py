@@ -1,10 +1,9 @@
 from dataclasses import dataclass
-from typing import Union
 from uuid import UUID
 from app.utils.error_handler import PrayFail, StorageFail
 import datetime
-import uuid
 from app.models import db
+from typing import List, Optional, Union
 from app.models.pray import Pray, Storage
 
 @dataclass
@@ -82,16 +81,23 @@ class PrayDAO:
 
 @dataclass
 class StorageDTO:
-    id: Union[int, None]
     pray_id: int
     user_id: UUID
-    pray_cnt: int
     deadline: datetime
+    id: Union[id, None]
+    pray_cnt: Optional[int] = None
+    created_at: Union[dataclass, None] = None
+    pray: PrayDAO = None
 
-    def __init__(self, pray_id, user_id, deadline):
-        self.user_id = user_id
+    def __init__(self, pray_id, user_id, deadline, pray_cnt=None, id=None, created_at=None, pray=None):
         self.pray_id = pray_id
+        self.user_id = user_id
         self.deadline = deadline
+        self.pray_cnt = pray_cnt
+        self.id = id
+        self.created_at = created_at
+        self.pray = pray
+        
         if not user_id:
             raise StorageFail('user_id is required')
         if not pray_id:
@@ -99,28 +105,81 @@ class StorageDTO:
         if not deadline:
             raise StorageFail('deadline is required')
 
+
+    def __repr__(self):
+        return {
+            'id': self.id,
+            'pray_id': self.pray_id,
+            'target': self.pray.target,
+            'title': self.pray.title,
+            'pray_user_id': str(self.pray.user_id),
+            'user_id': str(self.user_id),
+            'pray_cnt': self.pray_cnt,
+            'deadline': self.deadline.strftime("%Y-%m-%d"),
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
+            
+       
+    
 @dataclass
 class StorageDAO:
     id: Union[int, None]
     pray_id: int
     user_id: UUID
+    pray_cnt: Union[int, None]
     deadline: datetime
+    created_at: Union[dataclass, None]
+    pray: Union[PrayDAO, None]
+
+    def __init__(self, id, pray_id, user_id, deadline, pray_cnt=0, created_at=None, pray=None):
+        self.id = id
+        self.pray_id = pray_id
+        self.user_id = user_id
+        self.pray_cnt = pray_cnt
+        self.deadline = deadline
+        self.created_at = created_at
+        self.pray = pray
+
+    def __repr__(self):
+        return {
+            'id': self.id,
+            'pray_id': self.pray_id,
+            'target': self.pray.target,
+            'title': self.pray.title,
+            'pray_user_id': str(self.pray.user_id),
+            'user_id': str(self.user_id),
+            'pray_cnt': self.pray_cnt,
+            'deadline': self.deadline,
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
 
     def to_model(self) -> Storage:
         return Storage(
             id=self.id,
             pray_id=self.pray_id,
             user_id=self.user_id,
-            deadline=self.deadline,
-            created_at=datetime.datetime.now()
+            deadline=self.deadline
         )
+    
+    def to_dao(storage) -> 'StorageDAO':
+        return StorageDAO(
+            id=storage.id,
+            pray_id=storage.pray_id,
+            user_id=storage.user_id,
+            deadline=storage.deadline,
+            pray_cnt=storage.pray_cnt,
+            created_at=storage.created_at,
+            pray=storage.pray
+        ).__repr__()
     
     def save(self):
         try:
             storage = self.to_model()
             db.session.add(storage)
             db.session.commit()
-            self = storage
+            self.id = storage.id
+            self.pray = storage.pray
+            self.created_at = storage.created_at
         except Exception as e:
             pray = Pray.query.filter_by(pray_id=self.pray_id).first()
             db.session.rollback()
@@ -149,4 +208,38 @@ class StorageDAO:
             deadline=storage_dto.deadline,
         )
         storage_dao.save()
-        return storage_dao
+        return storage_dao.__repr__()
+    
+
+class StorageService:
+    def get_storages() -> List[StorageDTO]:
+        storages = Storage.query.all()
+        storage_dtos = [
+            StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            )
+            for storage in storages
+        ]
+    
+    def get_storage(storage_id) -> StorageDTO:
+        storage = Storage.query.filter_by(id=storage_id).first()
+        if not storage:
+            raise StorageFail('storage not found')
+        try:
+            return StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            ).__repr__()
+        except Exception:
+            raise StorageFail('get storage error')

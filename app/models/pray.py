@@ -12,6 +12,7 @@ class Pray(db.Model):
 class Storage(db.Model):
 		id = db.Column(db.Integer, primary_key=True)
 		pray_id = db.Column(db.Integer, db.ForeignKey('pray.id', ondelete='CASCADE'), nullable=False)
+		pray = db.relationship('Pray', backref=db.backref('pray', lazy=True))
 		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 		pray_cnt = db.Column(db.Integer, nullable=False, default=0)
 		deadline = db.Column(db.DateTime(), nullable=False)
