@@ -39,7 +39,7 @@ class Pray(Resource):
 class PrayDetail(Resource):
 	def get(self, pray_id):
 		"""
-		기도제목을 입력합니다.
+		기도제목을 조회합니다.
 		"""
 		# TODO: @login_required 추가 후 자신의 pray인지 확인하는 로직 추가하기
 		return StorageService.get_storage(pray_id), 200
