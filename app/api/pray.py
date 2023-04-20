@@ -17,7 +17,7 @@ class Pray(Resource):
 	@login_required
 	def post(self):
 		"""
-		Post Pray
+		기도제목을 입력합니다.
 		"""
 		user_id = g.user_id
 		user = g.user
