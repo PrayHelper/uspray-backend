@@ -17,9 +17,10 @@ class Pray(Resource):
 	@login_required
 	def post(self):
 		"""
-		Pray Post
+		Post Pray
 		"""
 		user_id = g.user_id
+		user = g.user
 		content = request.json
 
 		pray_dto = PrayDTO(
@@ -33,7 +34,9 @@ class Pray(Resource):
 			pray_id=pray_dao.id,
 			deadline=content['deadline']
 		)
-		return StorageDAO.create_storage(storage_dto), 200
+		storage_dao = StorageDAO.create_storage(storage_dto)
+		storages = StorageService.get_storages(user_id)
+		return { 'res': storages }, 200
 
 @pray.route('/<int:pray_id>', methods=['GET'])
 class PrayDetail(Resource):

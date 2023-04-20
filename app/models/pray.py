@@ -7,16 +7,19 @@ class Pray(db.Model):
 		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 		target = db.Column(db.String(50), nullable=False)
 		title = db.Column(db.Text(), nullable=False)
+		user = db.relationship('User', backref=db.backref('pray_set'))
+		storage = db.relationship('Storage', backref=db.backref('_pray'))
 
 
 class Storage(db.Model):
 		id = db.Column(db.Integer, primary_key=True)
 		pray_id = db.Column(db.Integer, db.ForeignKey('pray.id', ondelete='CASCADE'), nullable=False)
-		pray = db.relationship('Pray', backref=db.backref('pray'))
+		pray = db.relationship('Pray', backref=db.backref('_storage'))
 		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
 		pray_cnt = db.Column(db.Integer, nullable=False, default=0)
 		deadline = db.Column(db.DateTime(), nullable=False)
-		created_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
+		created_at = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now())
+		user = db.relationship('User', backref=db.backref('storage_set'))
 
 
 class Share(db.Model):

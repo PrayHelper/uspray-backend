@@ -212,8 +212,8 @@ class StorageDAO:
     
 
 class StorageService:
-    def get_storages() -> List[StorageDTO]:
-        storages = Storage.query.all()
+    def get_storages(user_id) -> List[StorageDTO]:
+        storages = Storage.query.filter_by(user_id=user_id).all()
         storage_dtos = [
             StorageDTO(
                 id=storage.id,
@@ -223,9 +223,10 @@ class StorageService:
                 deadline=storage.deadline,
                 created_at=storage.created_at,
                 pray=storage.pray
-            )
+            ).__repr__()
             for storage in storages
         ]
+        return (storage_dtos)
     
     def get_storage(storage_id) -> StorageDTO:
         storage = Storage.query.filter_by(id=storage_id).first()
