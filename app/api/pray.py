@@ -2,7 +2,7 @@ from app.decorators.login_required import login_required
 from flask_restx import Namespace, Resource, fields
 from flask import request, g
 from app.utils.pray import PrayDAO, PrayDTO, StorageDAO, StorageDTO, StorageService
-from app.models.pray import Pray
+from app.models.pray import Storage
 
 pray = Namespace('pray', description='pray test API')
 
@@ -48,21 +48,21 @@ class PrayDetail(Resource):
 		"""
 		# TODO: @login_required 추가 후 자신의 pray인지 확인하는 로직 추가하기
 		user_id = g.user_id
-		pray = Pray.query.filter_by(id=pray_id).first()
-		if pray is None:
+		storage = Storage.query.filter_by(pray_id=pray_id).first()
+		if storage is None:
 			return { 'message': '기도제목이 존재하지 않습니다.' }, 400
 		else:
-			if str(pray.user_id) != str(user_id):
+			if str(storage.user_id) != str(user_id):
 				return { 'message': '기도제목 아이디가 올바르지 않습니다.' }, 400
-			return StorageService.get_storage(pray_id), 200
+			return StorageService.get_storage(storage.id), 200
 		
-			
-	
+	@login_required
 	def delete(self, pray_id):
 		"""
 		기도제목을 삭제합니다.
 		"""
 		# TODO: StorageService.delete_storage(pray_id) + @login_required 추가하기
+
 
 	def put(self, pray_id):
 		"""
