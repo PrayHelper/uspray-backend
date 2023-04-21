@@ -8,7 +8,7 @@ import os
 
 from app.models import db
 from app.models.user import User
-from app.utils.user import UserDTO, UserDAO
+from app.utils.user import UserDTO,UserService
 
 user = Namespace('user', description='user test API')
 
@@ -31,6 +31,11 @@ findIdModel = user.model('FindId', {
     'phone': fields.String(required=True, default='01012345678', description='user phone')
 })
 
+findPwModel = user.clone('FindPw', findIdModel, {
+    'id': fields.String(required=True, default='userid', description='user id')
+})
+
+
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
     @user.expect(userModel)
@@ -47,7 +52,7 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        user_dao = UserDAO.create_user(user_dto)
+        user_dao = UserDTO.create_user(user_dto)
         payload = {
             'id': str(user_dao.id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
@@ -107,7 +112,38 @@ class FindId(Resource):
         """
         content = request.json
         u = User.query.filter_by(name=content['name'], phone=content['phone']).first()
+
         if u is None:
             return { 'message' : '유저가 존재하지 않습니다.' }, 400
-
         return { 'message': u.uid }, 200
+    
+
+@user.route('/find/password', methods=['POST'])
+class FindPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(findPwModel)
+    def post(self):
+        """
+        FindPassword
+        """
+        content = request.json
+
+        u = User.query.filter_by(name=content['name'], phone=content['phone'], uid=content['id']).first()
+        if u is None:
+            return { 'message' : '유저가 존재하지 않습니다.' }, 400
+        return { 'message': u.uid }, 200
+    
+
+@user.route('/reset/password', methods=['POST'])
+class ResetPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(loginModel)
+    def post(self):
+        """
+        ResetPassword
+        """
+        content = request.json
+        UserService.update_password(content['id'], content['password'])
+        return { 'message' : '비밀번호가 변경되었습니다.' }, 200
