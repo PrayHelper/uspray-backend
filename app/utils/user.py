@@ -56,7 +56,21 @@ class UserDAO:
         self.gender = gender
         self.birth = birth
         self.phone = phone 
-            
+        uid_pattern = r'^[a-z0-9]{6,15}$'
+        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
+        uid_reg = bool(re.match(uid_pattern, self.uid))
+        pw_reg = bool(re.match(pw_pattern, self.password))
+        phone_reg = bool(re.match(phone_pattern, self.phone))
+        if not uid_reg:
+            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+        if not pw_reg:
+            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+        if not phone_reg:
+            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
+        
+        new_password = bcrypt.hashpw(self.password.encode('UTF-8'), bcrypt.gensalt())
+        self.password = new_password.decode('UTF-8'),
 
     def to_model(self) -> User:
         return User(
@@ -92,26 +106,17 @@ class UserDAO:
         except Exception as e:
             db.session.rollback()
             raise e
+    
 
+    def get_user_by_id(self, user_id):
+        return User.query.filter_by(id=user_id).first()
+    
 
-    @staticmethod
+class UserService:
     def create_user(user_dto) -> 'UserDAO':
         """
         새로운 유저를 생성합니다.
         """
-        uid_pattern = r'^[a-z0-9]{6,15}$'
-        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
-        phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
-        uid_reg = bool(re.match(uid_pattern, user_dto.uid))
-        pw_reg = bool(re.match(pw_pattern, user_dto.password))
-        phone_reg = bool(re.match(phone_pattern, user_dto.phone))
-        if not uid_reg:
-            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
-        if not pw_reg:
-            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
-        if not phone_reg:
-            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
-
         dup_user_id = User.query.filter_by(uid=user_dto.uid).first()
         dup_phone = User.query.filter_by(phone=user_dto.phone).first()
         if dup_user_id is not None:
@@ -119,12 +124,11 @@ class UserDAO:
         if dup_phone is not None:
             raise SignUpFail("중복된 전화번호가 존재합니다.")
         
-        new_password = bcrypt.hashpw(user_dto.password.encode('UTF-8'), bcrypt.gensalt())
-
+        
         user_dao = UserDAO(
             id=None,
             uid=user_dto.uid,
-            password=new_password.decode('UTF-8'),
+            password=user_dto.password,
             name=user_dto.name,
             gender=user_dto.gender,
             birth=user_dto.birth,
@@ -132,7 +136,3 @@ class UserDAO:
         )
         user_dao.save()
         return user_dao
-    
-
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()

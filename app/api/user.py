@@ -7,7 +7,7 @@ import os
 
 from app.models import db
 from app.models.user import User
-from app.utils.user import UserDTO, UserDAO
+from app.utils.user import UserDTO, UserService
 
 user = Namespace('user', description='user test API')
 
@@ -41,7 +41,7 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        user_dao = UserDAO.create_user(user_dto)
+        user_dao = UserService.create_user(user_dto)
         payload = {
             'id': str(user_dao.id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)

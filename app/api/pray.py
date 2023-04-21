@@ -1,18 +1,20 @@
 from app.decorators.login_required import login_required
 from flask_restx import Namespace, Resource, fields
 from flask import request, g
-from app.utils.pray import PrayDAO, PrayDTO, StorageDAO, StorageDTO, StorageService
+from app.utils.pray import PrayService, StorageService
 from app.models.pray import Storage
+import datetime
 
 pray = Namespace('pray', description='pray test API')
 
 prayListModel = pray.model('Pray', {
     'target': fields.String(required=True, default='이수빈', description='pray target'),
     'title': fields.String(required=True, default='기도합니다', description='pray title'),
-    'deadline': fields.Date(required=True, description='pray deadline'),
+    'deadline': fields.DateTime(required=True, default='2021-08-01', description='pray deadline')
 })
 
-@pray.route('', methods=['POST'])
+
+@pray.route('', methods=['POST', 'GET'])
 class PrayPost(Resource):
 	@pray.expect(prayListModel)
 	@login_required
@@ -20,24 +22,18 @@ class PrayPost(Resource):
 		"""
 		기도제목을 입력합니다.
 		"""
-		user_id = g.user_id
-		user = g.user
 		content = request.json
+		# TODO: 둘 중 어느걸로 리턴 할지 프론트한테 물어봐야 함. 위에껄 더 선호할지도 ? ㅎㅎ 
+		return PrayService.create_pray(content['target'], content['title'], content['deadline']), 200
+		return { 'message': '기도제목이 입력되었습니다.' }, 200
+	
+	@login_required
+	def get(self):
+		"""
+		기도제목 목록을 조회합니다.
+		"""
+		return StorageService.get_storages(), 200
 
-		pray_dto = PrayDTO(
-			user_id=user_id,
-			target=content['target'],
-			title=content['title']
-		)
-		pray_dao = PrayDAO.create_pray(pray_dto)
-		storage_dto = StorageDTO(
-			user_id=user_id,
-			pray_id=pray_dao.id,
-			deadline=content['deadline']
-		)
-		storage_dao = StorageDAO.create_storage(storage_dto)
-		storages = StorageService.get_storages(user_id)
-		return { 'res': storages }, 200
 
 @pray.route('/<int:pray_id>', methods=['GET', 'DELETE'])
 class PrayDetail(Resource):
@@ -46,33 +42,16 @@ class PrayDetail(Resource):
 		"""
 		기도제목을 조회합니다.
 		"""
-		# TODO: @login_required 추가 후 자신의 pray인지 확인하는 로직 추가하기
-		user_id = g.user_id
-		storage = Storage.query.filter_by(pray_id=pray_id).first()
-		if storage is None:
-			return { 'message': '기도제목이 존재하지 않습니다.' }, 400
-		else:
-			if str(storage.user_id) != str(user_id):
-				return { 'message': '기도제목 아이디가 올바르지 않습니다.' }, 400
-			return StorageService.get_storage(storage.id), 200
+		return StorageService.get_storage(pray_id), 200
 		
+
 	@login_required
 	def delete(self, pray_id):
 		"""
 		기도제목을 삭제합니다.
 		"""
-		# TODO: StorageService.delete_storage(pray_id) + @login_required 추가하기
-		user_id = g.user_id
-		storage = Storage.query.filter_by(pray_id=pray_id).first()
-		if storage is None:
-			return { 'message': '기도제목이 존재하지 않습니다.' }, 400
-		else:
-			if str(storage.user_id) != str(user_id):
-				return { 'message': '기도제목 아이디가 올바르지 않습니다.' }, 400
-			StorageService.delete_storage(storage.id)
-			return { 'message': '기도제목이 삭제되었습니다.' }, 200
-
-
+		StorageService.delete_storage(pray_id)
+		return { 'message': '기도제목이 삭제되었습니다.' }, 204
 
 
 	def put(self, pray_id):
