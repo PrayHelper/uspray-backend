@@ -209,7 +209,20 @@ class StorageDAO:
         )
         storage_dao.save()
         return storage_dao.__repr__()
-    
+
+    @staticmethod
+    def delete_storage(storage_dto):
+        """
+        보관함을 삭제합니다.
+        """
+        storage_dao = StorageDAO(
+            id=None,
+            pray_id=storage_dto.pray_id,
+            user_id=storage_dto.user_id,
+            deadline=storage_dto.deadline,
+        )
+        storage_dao.delete()
+
 
 class StorageService:
     def get_storages(user_id) -> List[StorageDTO]:
@@ -244,3 +257,21 @@ class StorageService:
             ).__repr__()
         except Exception:
             raise StorageFail('get storage error')
+
+    def delete_storage(storage_id):
+        storage = Storage.query.filter_by(id=storage_id).first()
+        if not storage:
+            raise StorageFail('storage not found')
+        try:
+            storage_dto = StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            )
+            StorageDAO.delete_storage(storage_dto)
+        except Exception:
+            raise StorageFail('delete storage error')

@@ -39,7 +39,7 @@ class PrayPost(Resource):
 		storages = StorageService.get_storages(user_id)
 		return { 'res': storages }, 200
 
-@pray.route('/<int:pray_id>', methods=['GET'])
+@pray.route('/<int:pray_id>', methods=['GET', 'DELETE'])
 class PrayDetail(Resource):
 	@login_required
 	def get(self, pray_id):
@@ -62,6 +62,17 @@ class PrayDetail(Resource):
 		기도제목을 삭제합니다.
 		"""
 		# TODO: StorageService.delete_storage(pray_id) + @login_required 추가하기
+		user_id = g.user_id
+		storage = Storage.query.filter_by(pray_id=pray_id).first()
+		if storage is None:
+			return { 'message': '기도제목이 존재하지 않습니다.' }, 400
+		else:
+			if str(storage.user_id) != str(user_id):
+				return { 'message': '기도제목 아이디가 올바르지 않습니다.' }, 400
+			StorageService.delete_storage(storage.id)
+			return { 'message': '기도제목이 삭제되었습니다.' }, 200
+
+
 
 
 	def put(self, pray_id):
