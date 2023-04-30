@@ -14,8 +14,8 @@ prayModel = pray.model('Pray', {
 })
 
 prayUpdateModel = pray.model('Pray Update', {
-	'pray_cnt': fields.Integer(required=True, default=5, description='pray count'),
-	'deadline': fields.Date(required=True, default='2021-08-01', description='pray deadline')
+	'pray_cnt': fields.Integer(required=False, default=0, description='pray count'),
+	'deadline': fields.Date(required=False, default='2021-08-01', description='pray deadline')
 })
 
 @pray.route('', methods=['POST', 'GET'])
@@ -27,9 +27,7 @@ class Pray(Resource):
 		기도제목을 입력합니다.
 		"""
 		content = request.json
-		# TODO: 둘 중 어느걸로 리턴 할지 프론트한테 물어봐야 함. 위에껄 더 선호할지도 ? ㅎㅎ 
 		return PrayService.create_pray(content['target'], content['title'], content['deadline']), 200
-		return { 'message': '기도제목이 입력되었습니다.' }, 200
 	
 	@login_required
 	def get(self):
@@ -64,5 +62,5 @@ class PrayDetail(Resource):
 		기도제목을 수정합니다.
 		"""
 		content = request.json
-		return StorageService.update_storage(pray_id, content['pray_cnt'], content['deadline']), 200
+		return StorageService.update_storage(pray_id, content), 200
 	

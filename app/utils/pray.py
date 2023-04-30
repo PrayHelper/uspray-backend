@@ -47,8 +47,6 @@ class PrayDTO:
             db.session.commit()
             self.id = pray.id
         except Exception as e:
-            print(e)
-            return e
             db.session.rollback()
             db.session.close()
             raise e
@@ -188,13 +186,16 @@ class StorageService:
             raise StorageFail('delete storage error')
     
 
-    def update_storage(storage_id, pray_cnt, deadline) -> StorageDTO:
+    def update_storage(storage_id, content) -> StorageDTO:
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
         if not storage:
             StorageFail('storage not found')
+       
         try:
-            storage.deadline = deadline
-            storage.pray_cnt = pray_cnt
+            if 'deadline' in content:
+                storage.deadline = content['deadline']
+            if 'pray_cnt' in content:
+                storage.pray_cnt = content['pray_cnt']
             db.session.commit()
         except Exception:
             raise StorageFail('update storage error')
