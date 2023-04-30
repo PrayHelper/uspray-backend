@@ -7,8 +7,8 @@ class CustomUserError(Exception):
         self.error_message = error_message
         self.rv = dict(
             status_code=self.status_code,
-            dev_error_message=self.dev_error_message,
-            error_message=self.error_message
+            dev_message=self.dev_error_message,
+            message=self.error_message
         )
         
     def to_dict(self):

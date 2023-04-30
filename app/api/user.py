@@ -17,13 +17,23 @@ userModel = user.model('User', {
     'name': fields.String(required=True, default='name', description='user name'),
     'gender': fields.String(required=True, default='여', description='user gender'),
     'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
-    'phone': fields.String(required=True, default='01011112222', description='user phone'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone'),
 })
 
 loginModel = user.model('Login', {
     'id': fields.String(required=True, default='userid', decription='user id'),
     'password': fields.String(required=True, default='password', decription='user password')
 })
+
+findIdModel = user.model('FindId', {
+    'name': fields.String(required=True, default='홍길동', description='user name'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone')
+})
+
+findPwModel = user.clone('FindPw', findIdModel, {
+    'id': fields.String(required=True, default='userid', description='user id')
+})
+
 
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
@@ -88,3 +98,51 @@ class Login(Resource):
             return { 'access_token': token }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
+
+
+@user.route('/find/id', methods=['POST'])
+class FindId(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(findIdModel)
+    def post(self):
+        """
+        FindId
+        """
+        content = request.json
+        u = User.query.filter_by(name=content['name'], phone=content['phone']).first()
+
+        if u is None:
+            return { 'message' : '유저가 존재하지 않습니다.' }, 400
+        return { 'message': u.uid }, 200
+    
+
+@user.route('/find/password', methods=['POST'])
+class FindPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(findPwModel)
+    def post(self):
+        """
+        FindPassword
+        """
+        content = request.json
+
+        u = User.query.filter_by(name=content['name'], phone=content['phone'], uid=content['id']).first()
+        if u is None:
+            return { 'message' : '유저가 존재하지 않습니다.' }, 400
+        return { 'message': u.uid }, 200
+    
+
+@user.route('/reset/password', methods=['POST'])
+class ResetPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(loginModel)
+    def post(self):
+        """
+        ResetPassword
+        """
+        content = request.json
+        UserService.update_password(content['id'], content['password'])
+        return { 'message' : '비밀번호가 변경되었습니다.' }, 200
