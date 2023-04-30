@@ -1,4 +1,3 @@
-from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
 from flask import request
 import bcrypt
@@ -8,7 +7,7 @@ import os
 
 from app.models import db
 from app.models.user import User
-from app.utils.user import UserDTO,UserService
+from app.utils.user import UserDTO, UserService
 
 user = Namespace('user', description='user test API')
 
@@ -52,7 +51,7 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        user_dao = UserDTO.create_user(user_dto)
+        user_dao = UserService.create_user(user_dto)
         payload = {
             'id': str(user_dao.id),
             'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)

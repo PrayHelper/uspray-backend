@@ -57,7 +57,8 @@ class UserDTO:
             user = self.to_model()
             db.session.add(user)
             db.session.commit()
-            self = user
+            self.id = user.id
+
         except Exception as e:
             db.session.rollback()
             db.session.close()
@@ -71,8 +72,11 @@ class UserDTO:
         except Exception as e:
             db.session.rollback()
             raise e
+    
 
-
+    def get_user_by_id(self, user_id):
+        return User.query.filter_by(id=user_id).first()
+    
     @staticmethod
     def create_user(user) -> 'UserDTO':
         """
@@ -93,11 +97,12 @@ class UserDTO:
 
         dup_user_id = User.query.filter_by(uid=user.uid).first()
         dup_phone = User.query.filter_by(phone=user.phone).first()
+        
         if dup_user_id is not None:
             raise SignUpFail("중복된 아이디가 존재합니다.")
         if dup_phone is not None:
             raise SignUpFail("중복된 전화번호가 존재합니다.")
-        
+   
         new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
 
         user_dto = UserDTO(
