@@ -166,13 +166,13 @@ class StorageService:
 
     def create_storage(pray_dto, deadline) -> StorageDTO:
         try:
-            storage_dao = StorageDTO(
+            storage_dto = StorageDTO(
                 pray_id=pray_dto.id,
                 user_id=pray_dto.user_id,
                 deadline=deadline
             )
-            storage_dao.save()
-            return storage_dao.__repr__()
+            storage_dto.save()
+            return storage_dto.__repr__()
         except Exception:
             raise StorageFail('create storage error')
         
@@ -186,6 +186,27 @@ class StorageService:
             db.session.commit()
         except Exception:
             raise StorageFail('delete storage error')
+    
+
+    def update_storage(storage_id, pray_cnt, deadline) -> StorageDTO:
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        if not storage:
+            StorageFail('storage not found')
+        try:
+            storage.deadline = deadline
+            storage.pray_cnt = pray_cnt
+            db.session.commit()
+        except Exception:
+            raise StorageFail('update storage error')
+        return StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            ).__repr__()
 
 
 class PrayService:
