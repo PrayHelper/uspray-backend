@@ -5,7 +5,6 @@ import datetime
 import jwt
 import os
 
-from app.models import db
 from app.models.user import User
 from app.utils.user import UserDTO, UserService
 

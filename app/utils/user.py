@@ -77,7 +77,27 @@ class UserDTO:
     def get_user_by_id(self, user_id):
         return User.query.filter_by(id=user_id).first()
     
-    @staticmethod
+    def get_user_by_id(self, user_id):
+        return User.query.filter_by(id=user_id).first()
+    
+
+class UserService:
+    def update_password(user_id, password):
+        user = User.query.filter_by(uid=user_id).first()
+        if user is None:
+            raise Exception("존재하지 않는 유저입니다.")
+        
+        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        pw_reg = bool(re.match(pw_pattern,password))
+        if not pw_reg:
+            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+        
+        new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
+        user.password = new_password.decode('UTF-8')
+        db.session.commit()
+        return str(new_password)
+
+
     def create_user(user) -> 'UserDTO':
         """
         새로운 유저를 생성합니다.
@@ -117,24 +137,3 @@ class UserDTO:
         user_dto.save()
         return user_dto
 
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()
-    
-
-class UserService:
-    def update_password(user_id, password):
-        user = User.query.filter_by(uid=user_id).first()
-        if user is None:
-            raise Exception("존재하지 않는 유저입니다.")
-        
-        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
-        pw_reg = bool(re.match(pw_pattern,password))
-        if not pw_reg:
-            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
-        
-        new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
-        user.password = new_password.decode('UTF-8')
-        db.session.commit()
-        return str(new_password)
-
-    # create_user 함수 여기로 이동
