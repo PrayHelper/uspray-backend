@@ -64,3 +64,12 @@ class PrayDetail(Resource):
 		content = request.json
 		return StorageService.update_storage(pray_id, content), 200
 	
+@pray.route('/increase-count/<int:pray_id>', methods=['PUT'])
+class PrayDetail(Resource):
+		@login_required
+		def put(self, pray_id):
+			"""
+			기도를 완료합니다.
+			"""
+			StorageService.increase_cnt(pray_id)
+			return StorageService.get_storages(), 200

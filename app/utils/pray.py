@@ -209,6 +209,16 @@ class StorageService:
                 pray=storage.pray
             ).__repr__()
 
+    def increase_cnt(storage_id):
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        if not storage:
+            StorageFail('storage not found')
+        try:
+            storage.pray_cnt += 1
+            db.session.commit()
+        except Exception:
+            raise StorageFail('increase pray_cnt error')
+
 
 class PrayService:
     def create_pray(target, title, deadline) -> PrayDTO:
