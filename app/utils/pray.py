@@ -128,7 +128,7 @@ class StorageDTO:
 
 class StorageService:
     def get_storages() -> List[StorageDTO]:
-        storages = Storage.query.filter_by(user_id=g.user_id).all()
+        storages = Storage.query.filter_by(user_id=g.user_id).filter(Storage.deadline >= datetime.datetime.now()).all()
         storage_dtos = [
             StorageDTO(
                 id=storage.id,
