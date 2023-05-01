@@ -42,7 +42,7 @@ class PrayDetail(Resource):
 	@login_required
 	def get(self, pray_id):
 		"""
-		기도제목을 조회합니다.
+		기도제목을 조회합니다. (마감일이 지나지 않은 기도제목만 반환)
 		"""
 		return StorageService.get_storage(pray_id), 200
 		
@@ -53,7 +53,8 @@ class PrayDetail(Resource):
 		기도제목을 삭제합니다.
 		"""
 		StorageService.delete_storage(pray_id)
-		return { 'message': '기도제목이 삭제되었습니다.' }, 204
+		return StorageService.get_storages(), 200
+
 
 	@pray.expect(prayUpdateModel)
 	@login_required
