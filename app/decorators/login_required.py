@@ -16,7 +16,7 @@ def login_required(f):
                 user_id = payload['id']
                 u = User.query.filter_by(id=user_id).first()
                 if u is not None:
-                    g.user_id = user_id
+                    g.user_id = u.id
                     g.user = u
                 else:
                     g.user = None

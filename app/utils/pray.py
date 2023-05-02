@@ -90,10 +90,9 @@ class StorageDTO:
     def __repr__(self):
         return {
             'id': self.id,
-            'pray_id': self.pray_id,
             'target': self.pray.target,
             'title': self.pray.title,
-            'pray_user_id': str(self.pray.user_id),
+            # 'pray_user_id': str(self.pray.user_id),
             'user_id': str(self.user_id),
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
@@ -232,3 +231,27 @@ class PrayService:
             return StorageService.create_storage(pray_dto, deadline)
         except Exception:
             raise PrayFail('create pray error')
+        
+    def update_pray(content, storage_id) -> PrayDTO:
+        try:
+            storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+            shared_storage = Storage.query.filter_by(pray_id=storage.pray_id).all()
+            if not storage:
+                raise PrayFail('pray not found')
+            elif len(shared_storage) > 1:
+                raise PrayFail('can not update shared pray')
+            elif str(storage.pray.user_id) != str(g.user_id):
+                raise PrayFail('can not update other user pray')
+            pray = Pray.query.filter_by(id=storage.pray_id).first()
+            if 'target' in content:
+                pray.target = content['target']
+            if 'title' in content:
+                pray.title = content['title']
+            if 'deadline' in content:
+                pray.deadline = content['deadline']
+            db.session.commit()
+            return StorageService.get_storage(storage_id)
+
+        except Exception:
+            raise PrayFail('update pray error')
+            

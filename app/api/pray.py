@@ -10,12 +10,12 @@ pray = Namespace('pray', description='pray test API')
 prayModel = pray.model('Pray', {
     'target': fields.String(required=True, default='이수빈', description='pray target'),
     'title': fields.String(required=True, default='기도합니다', description='pray title'),
-    'deadline': fields.Date(required=True, default='2021-08-01', description='pray deadline')
+    'deadline': fields.Date(required=True, default='2024-08-01', description='pray deadline')
 })
 
 prayUpdateModel = pray.model('Pray Update', {
 	'pray_cnt': fields.Integer(required=False, default=0, description='pray count'),
-	'deadline': fields.Date(required=False, default='2021-08-01', description='pray deadline')
+	'deadline': fields.Date(required=False, default='2024-08-01', description='pray deadline')
 })
 
 @pray.route('', methods=['POST', 'GET'])
@@ -60,11 +60,24 @@ class PrayDetail(Resource):
 	@login_required
 	def put(self, pray_id):
 		"""
-		기도제목을 수정합니다.
+		기도제목을 수정합니다. (공유 받은 기도제목, deadline만 수정 가능)
 		"""
 		content = request.json
 		return StorageService.update_storage(pray_id, content), 200
 	
+
+@pray.route('/my/<int:pray_id>', methods=['PUT'])
+class MyPrayDetail(Resource):
+	@login_required
+	@pray.expect(prayModel)
+	def put(self, pray_id):
+		"""
+		기도제목을 수정합니다. (공유 전 나의 기도제목만 수정 가능)
+		"""
+		content = request.json
+		return PrayService.update_pray(content, pray_id), 200
+	
+
 @pray.route('/increase-count/<int:pray_id>', methods=['PUT'])
 class PrayDetail(Resource):
 		@login_required
