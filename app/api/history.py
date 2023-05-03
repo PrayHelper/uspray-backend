@@ -9,6 +9,11 @@ pagination = history.parser()
 pagination.add_argument('page', required=False, type=int, default=1)
 pagination.add_argument('per_page', required=False, type=int, default=15)
 
+historyModifyModel = history.model('Modify Deadline', {
+	'pray_id': fields.Integer(required=False, description='pray id'),
+	'deadline': fields.Date(required=False, default='2021-08-01', description='modified deadline')
+})
+
 @history.route('', methods=['GET'])
 class History(Resource):
 	@history.expect(pagination)
@@ -19,4 +24,15 @@ class History(Resource):
 		"""
 		content = pagination.parse_args()
 		return StorageService.get_history(content), 200
+
+@history.route('/modify-deadline', methods=['PUT'])
+class HistoryUpdate(Resource):
+	@history.expect(historyModifyModel)
+	@login_required
+	def put(self):
+		"""
+		히스토리의 마감기한을 수정합니다.
+		"""
+		content = request.json
+		return StorageService.modify_deadline(content), 200
 	

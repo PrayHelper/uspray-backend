@@ -221,6 +221,7 @@ class StorageService:
                 pray=storage.pray
             ).__repr__()
 
+
     def increase_cnt(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
         if not storage:
@@ -258,6 +259,19 @@ class StorageService:
 			'per_page': storages.per_page,
 		}
         return (res)
+
+    
+    def modify_deadline(content):
+        storage = Storage.query.filter_by(id=content['pray_id'], user_id=g.user_id).first()
+        if not storage:
+            StorageFail('storage not found')
+        try:
+            storage.deadline = content['deadline']
+            db.session.commit()
+        except Exception:
+            raise StorageFail('modify deadline error')
+        return StorageService.get_storage(content['pray_id'])
+
 
 class PrayService:
     def create_pray(target, title, deadline) -> PrayDTO:
