@@ -53,7 +53,8 @@ class SignUp(Resource):
         user_dao = UserService.create_user(user_dto)
         payload = {
             'id': str(user_dao.id),
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
+            'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat(),
+            'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
         }
         token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
         return { 'access_token': token }, 200
@@ -84,14 +85,14 @@ class Login(Resource):
         content = request.json
 
         u = User.query.filter_by(uid=content['id']).first()
-
         if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
         
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
             payload = {
                 'id': str(u.id),
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
+                'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat(),
+                'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
             }
             token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
             return { 'access_token': token }, 200
