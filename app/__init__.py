@@ -3,10 +3,10 @@ from flask_restx import Api
 from .api.admin import admin
 from .api.user import user
 from .api.pray import pray
+from .api.share import share
 import os
 
 from flask_migrate import Migrate
-from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 
 def create_app():
@@ -36,6 +36,7 @@ def create_app():
     api.add_namespace(admin, '')
     api.add_namespace(user, '/user')
     api.add_namespace(pray, '/pray')
+    api.add_namespace(share, '/share')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM

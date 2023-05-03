@@ -1,10 +1,7 @@
 from app.decorators.login_required import login_required
 from flask_restx import Namespace, Resource, fields
-from flask import request, g
+from flask import request
 from app.utils.pray import PrayService, StorageService
-from app.models.pray import Storage
-import datetime
-
 pray = Namespace('pray', description='pray test API')
 
 prayModel = pray.model('Pray', {
