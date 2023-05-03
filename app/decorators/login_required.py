@@ -28,6 +28,7 @@ def login_required(f):
                     }
                     token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
                     return { 'access_token': token }, 200
+
                 else:
                     u = User.query.filter_by(id=user_id).first()
                     if u is not None:
