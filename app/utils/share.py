@@ -67,7 +67,9 @@ class ShareService:
         for pray_id in prayList:
           pray = Pray.query.filter_by(id=pray_id).first()
           if pray is None or pray.user_id == g.user_id:
-              raise ShareError('공유할 수 없는 기도제목입니다.')
+                raise ShareError('공유할 수 없는 기도제목입니다.')
+          if Share.query.filter_by(receipt_id=g.user_id, pray_id=pray_id).first() is not None:
+                raise ShareError('이미 공유받은 기도제목입니다.')
           try:
               share = ShareDTO(receipt_id=g.user_id, pray_id=pray_id)
               share.save()

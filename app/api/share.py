@@ -1,12 +1,9 @@
 from flask_restx import Namespace, Resource, fields
 from app.decorators.login_required import login_required
-from app.models.pray import Pray, Share
-from flask import g
 from flask import request
-from app.models import db
-import datetime
-
+import urllib.parse
 from app.utils.share import ShareService
+from urllib.parse import parse_qsl, urlparse, urlunparse, unquote
 
 share = Namespace('share', description='Share related operations')
 
@@ -21,6 +18,8 @@ prayListModel = share.model('PrayList', {
     'pray_id_list': fields.List(fields.Integer, required=True, description='pray id list')
 })
 
+pray_list_encoding = share.parser()
+pray_list_encoding.add_argument('pray_list', type=str, required=True, help='pray list', location='args')
 
 @share.route('', methods=['GET', 'POST'])
 class Share(Resource):
@@ -36,10 +35,12 @@ class Share(Resource):
     @share.expect(prayListModel)
     def post(self):
       """
-      기도제목을 공유받습니다. 
+      기도제목 리스트를 공유하고 공유 url을 반환합니다.
       """
       content = request.json
-      return ShareService.share_pray(content['pray_id_list'])
+      pray_list = ",".join(str(pray_id) for pray_id in content['pray_id_list'])
+      return "https://api.uspray.krapi/share/social?pray_list=" + urllib.parse.quote(pray_list)
+    
     
 @share.route('/storage/<int:pray_id>', methods=['POST'])
 class ShareStorage(Resource):
@@ -50,3 +51,21 @@ class ShareStorage(Resource):
       """
       return ShareService.save_storage(pray_id)
     
+
+@share.route('/social', methods=['GET'])
+class SharePrayByLink(Resource):
+    @login_required
+    @share.expect(pray_list_encoding)
+    def get(self):
+      """
+      기도제목을 공유합니다. 
+      """
+      parsed_url = urlparse(request.url)
+      query_params = parse_qsl(parsed_url.query)
+
+      pray_list_encoding_str = next((val for key, val in query_params if key == 'pray_list'), None)
+      if pray_list_encoding_str:
+          prays_decoded = [int(todo) for todo in unquote(pray_list_encoding_str).split(',')]
+          return ShareService.share_pray(prays_decoded)
+    
+
