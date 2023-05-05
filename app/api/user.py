@@ -51,13 +51,7 @@ class SignUp(Resource):
             phone=content['phone']
         )
         user_dao = UserService.create_user(user_dto)
-        payload = {
-            'id': str(user_dao.id),
-            'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat(),
-            'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
-        }
-        token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-        return { 'access_token': token }, 200
+        return { 'message': '회원가입 되었습니다' }, 200
 
 
 @user.route('/dup_check/<string:id>', methods=['GET'])
@@ -89,13 +83,18 @@ class Login(Resource):
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
         
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
-            payload = {
+            access_payload = {
                 'id': str(u.id),
-                'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat(),
+                'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat()
+            }
+            access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+
+            refresh_payload = {
+                'id': str(u.id),
                 'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
             }
-            token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-            return { 'access_token': token }, 200
+            refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+            return { 'access_token': access_token, 'refresh_token': refresh_token }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
 

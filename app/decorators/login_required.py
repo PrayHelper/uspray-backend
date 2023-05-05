@@ -16,27 +16,29 @@ def login_required(f):
             try:
                 payload = jwt.decode(access_token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
                 user_id = payload['id']
-                access_token_exp = payload['access_token_exp']
-                refresh_token_exp = payload['refresh_token_exp']
-                if datetime.datetime.fromisoformat(refresh_token_exp) < datetime.datetime.now():
-                    raise InvalidTokenError("refresh token expired")
-                elif datetime.datetime.fromisoformat(access_token_exp) < datetime.datetime.now():
-                    payload = {
-                        'id': user_id,
-                        'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat(),
-                        'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
-                    }
-                    token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-                    return { 'access_token': token }, 200
-
-                else:
-                    u = User.query.filter_by(id=user_id).first()
-                    if u is not None:
-                        g.user_id = user_id
-                        g.user = u
+                if 'access_token_exp' in payload:
+                    access_token_exp = payload['access_token_exp']
+                    if datetime.datetime.fromisoformat(access_token_exp) < datetime.datetime.now():
+                        raise InvalidTokenError("access token expired")
                     else:
-                        g.user = None
-                        raise InvalidTokenError("user not found")
+                        u = User.query.filter_by(id=user_id).first()
+                        if u is not None:
+                            g.user_id = user_id
+                            g.user = u
+                        else:
+                            g.user = None
+                            raise InvalidTokenError("user not found")
+                elif 'refresh_token_exp' in payload:
+                    refresh_token_exp = payload['refresh_token_exp']
+                    if datetime.datetime.fromisoformat(refresh_token_exp) < datetime.datetime.now():
+                        raise InvalidTokenError("refresh token expired")
+                    else:
+                        payload = {
+                            'id': user_id,
+                            'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat()
+                        }
+                        token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+                        return { 'access_token': token }, 200
             except jwt.InvalidTokenError:
                 raise InvalidTokenError("invalid token")
             return f(*args, **kwargs)
