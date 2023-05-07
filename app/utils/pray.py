@@ -108,7 +108,8 @@ class StorageDTO:
             'writer': self.pray.user.name,
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
-            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'origin_created_at': self.pray.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
 
 
@@ -259,18 +260,6 @@ class StorageService:
 			'per_page': storages.per_page,
 		}
         return (res)
-
-    
-    def modify_deadline(content):
-        storage = Storage.query.filter_by(id=content['pray_id'], user_id=g.user_id).first()
-        if not storage:
-            StorageFail('storage not found')
-        try:
-            storage.deadline = content['deadline']
-            db.session.commit()
-        except Exception:
-            raise StorageFail('modify deadline error')
-        return StorageService.get_storage(content['pray_id'])
 
 
 class PrayService:
