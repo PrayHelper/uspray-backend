@@ -23,7 +23,7 @@ pray_list_encoding.add_argument('pray_list', type=str, required=True, help='pray
 
 @share.route('', methods=['GET', 'POST'])
 class Share(Resource):
-    @login_required
+    # @login_required
     def get(self):
       """
       공유받은 기도제목 목록을 조회합니다. (보관함)
@@ -31,7 +31,7 @@ class Share(Resource):
       share_list = ShareService.get_share_list()
       return share_list
     
-    @login_required
+    # @login_required
     @share.expect(prayListModel)
     def post(self):
       """
@@ -44,7 +44,7 @@ class Share(Resource):
     
 @share.route('/storage/<int:pray_id>', methods=['POST'])
 class ShareStorage(Resource):
-    @login_required
+    # @login_required
     def post(self, pray_id):
       """
       공유 받은 기도제목을 저장합니다.
@@ -54,7 +54,7 @@ class ShareStorage(Resource):
 
 @share.route('/social', methods=['GET'])
 class SharePrayByLink(Resource):
-    @login_required
+    # @login_required
     @share.expect(pray_list_encoding)
     def get(self):
       """
