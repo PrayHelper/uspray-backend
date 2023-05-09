@@ -2,7 +2,7 @@ name: Deploy Backend on Development Server
 on:
   push:
     branches:
-      - feature/cd
+      - main
 
 jobs:
   deploy:
