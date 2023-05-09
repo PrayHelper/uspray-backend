@@ -99,6 +99,20 @@ class StorageDTO:
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
 
+
+    def history(self):
+        return {
+            'id': self.id,
+            'target': self.pray.target,
+            'title': self.pray.title,
+            'writer': self.pray.user.name,
+            'pray_cnt': self.pray_cnt,
+            'deadline': self.deadline.strftime("%Y-%m-%d"),
+            'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'origin_created_at': self.pray.created_at.strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+
     def to_model(self) -> Storage:
         return Storage(
             id=self.id,
@@ -208,6 +222,7 @@ class StorageService:
                 pray=storage.pray
             ).__repr__()
 
+
     def increase_cnt(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
         if not storage:
@@ -217,6 +232,34 @@ class StorageService:
             db.session.commit()
         except Exception:
             raise StorageFail('increase pray_cnt error')
+
+
+    def get_history(content):
+        storages = Storage.query.filter_by(user_id=g.user_id).filter(Storage.deadline < datetime.datetime.now()).order_by(Storage.created_at.desc()).paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+        storage_dtos = [
+            StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            ).history()
+            for storage in storages.items
+        ]
+        res = {
+			'res' : storage_dtos,
+			'total' : storages.total,
+			'has_prev': storages.has_prev,
+			'has_next': storages.has_next,
+			'prev_num': storages.prev_num,
+			'next_num': storages.next_num,
+			'page': storages.page,
+			'pages': storages.pages,
+			'per_page': storages.per_page,
+		}
+        return (res)
 
 
 class PrayService:

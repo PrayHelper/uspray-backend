@@ -4,6 +4,7 @@ from .api.admin import admin
 from .api.user import user
 from .api.pray import pray
 from .api.share import share
+from .api.history import history
 import os
 
 from flask_migrate import Migrate
@@ -37,6 +38,7 @@ def create_app():
     api.add_namespace(user, '/user')
     api.add_namespace(pray, '/pray')
     api.add_namespace(share, '/share')
+    api.add_namespace(history, '/history')
     app.config.SWAGGER_UI_DOC_EXPANSION = 'list'
 
     # ORM
