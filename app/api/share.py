@@ -52,7 +52,7 @@ class Share(Resource):
 
     
     
-@share.route('/storage/save', methods=['POST'])
+@share.route('/save', methods=['POST'])
 class ShareStorage(Resource):
     @login_required
     @share.expect(prayListModel)
