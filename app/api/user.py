@@ -1,31 +1,38 @@
-from flask_restx import Namespace, Resource
 from flask_restx import Namespace, Resource, fields
-from flask import request, g, jsonify
+from flask import request
 import bcrypt
 import datetime
-import requests
 import jwt
 import os
 
-from app.models import db
 from app.models.user import User
-from app.dto.user import UserDTO 
+from app.utils.user import UserDTO, UserService
 
 user = Namespace('user', description='user test API')
 
 userModel = user.model('User', {
-    'id': fields.String(required=True, description='user id'),
-    'password': fields.String(required=True, description='user password'),
-    'name': fields.String(required=True, description='user name'),
-    'gender': fields.String(required=True, description='user gender'),
-    'birth': fields.Date(required=True, description='user birth'),
-    'phone': fields.String(required=True, description='user phone'),
+    'id': fields.String(required=True, default='userid', description='user id'),
+    'password': fields.String(required=True, default='password', description='user password'),
+    'name': fields.String(required=True, default='name', description='user name'),
+    'gender': fields.String(required=True, default='여', description='user gender'),
+    'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone'),
 })
 
 loginModel = user.model('Login', {
-    'id': fields.String(required=True, decription='user id'),
-    'password': fields.String(required=True, decription='user password')
+    'id': fields.String(required=True, default='userid', decription='user id'),
+    'password': fields.String(required=True, default='password', decription='user password')
 })
+
+findIdModel = user.model('FindId', {
+    'name': fields.String(required=True, default='홍길동', description='user name'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone')
+})
+
+findPwModel = user.clone('FindPw', findIdModel, {
+    'id': fields.String(required=True, default='userid', description='user id')
+})
+
 
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
@@ -35,7 +42,7 @@ class SignUp(Resource):
         Signup
         """
         content = request.json
-        u = UserDTO.create_user(
+        user_dto = UserDTO(
             uid=content['id'],
             password=content['password'],
             name=content['name'],
@@ -43,17 +50,13 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        payload = {
-            'id': str(u.id),
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
-        }
-        token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-        return { 'access_token': token }, 200
+        user_dao = UserService.create_user(user_dto)
+        return { 'message': '회원가입 되었습니다' }, 200
 
 
 @user.route('/dup_check/<string:id>', methods=['GET'])
 class IdDupCheck(Resource):
-    @user.doc(params={'id': 'id'})
+    @user.doc(params={'id': 'uos920'})
     def get(self, id):
         """
         IdDupCheck
@@ -76,16 +79,69 @@ class Login(Resource):
         content = request.json
 
         u = User.query.filter_by(uid=content['id']).first()
-
         if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
         
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
-            payload = {
+            access_payload = {
                 'id': str(u.id),
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)
+                'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat()
             }
-            token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-            return { 'access_token': token }, 200
+            access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+
+            refresh_payload = {
+                'id': str(u.id),
+                'refresh_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
+            }
+            refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+            return { 'access_token': access_token, 'refresh_token': refresh_token }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
+
+
+@user.route('/find/id', methods=['POST'])
+class FindId(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(findIdModel)
+    def post(self):
+        """
+        FindId
+        """
+        content = request.json
+        u = User.query.filter_by(name=content['name'], phone=content['phone']).first()
+
+        if u is None:
+            return { 'message' : '유저가 존재하지 않습니다.' }, 400
+        return { 'message': u.uid }, 200
+    
+
+@user.route('/find/password', methods=['POST'])
+class FindPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(findPwModel)
+    def post(self):
+        """
+        FindPassword
+        """
+        content = request.json
+
+        u = User.query.filter_by(name=content['name'], phone=content['phone'], uid=content['id']).first()
+        if u is None:
+            return { 'message' : '유저가 존재하지 않습니다.' }, 400
+        return { 'message': u.uid }, 200
+    
+
+@user.route('/reset/password', methods=['POST'])
+class ResetPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(loginModel)
+    def post(self):
+        """
+        ResetPassword
+        """
+        content = request.json
+        UserService.update_password(content['id'], content['password'])
+        return { 'message' : '비밀번호가 변경되었습니다.' }, 200
