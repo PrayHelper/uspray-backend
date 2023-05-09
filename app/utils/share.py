@@ -1,8 +1,10 @@
+from datetime import timedelta
 import datetime
 import uuid
 from app.models.pray import Pray, Share
 from app.models import db
 from flask import g
+from sqlalchemy import and_, not_
 from app.utils.error_handler import ShareError
 from app.utils.pray import PrayDTO, StorageService
 from app.models.pray import Storage
@@ -78,8 +80,20 @@ class ShareService:
         return [ ShareService.get_share_pray(pray_id) for pray_id in prayList ]
     
     def get_share_list():
-        share_list = Share.query.filter_by(receipt_id=g.user_id).all()
-        return [ ShareDTO(share.receipt_id, share.pray_id, share.pray, share.created_at).__repr__() for share in share_list ]
+        fifteen_days_ago = datetime.datetime.utcnow() - timedelta(days=15)
+
+        share_list = db.session.query(Share, Pray)\
+            .join(Pray, Share.pray_id == Pray.id)\
+            .filter(Share.receipt_id == g.user_id)\
+            .filter(Share.created_at >= fifteen_days_ago)\
+            .filter(Pray.user_id != g.user_id)\
+            .filter(not_(db.session.query(Storage).filter(and_(
+                Storage.user_id == g.user_id,
+                Storage.pray_id == Pray.id
+            )).exists()))\
+            .all()
+
+        return [ ShareDTO(share.receipt_id, share.pray_id, share.pray, share.created_at).__repr__() for (share, pray) in share_list ]
     
     def get_share_pray(pray_id):
         share = Share.query.filter_by(pray_id=pray_id).first()
@@ -87,17 +101,29 @@ class ShareService:
             raise ShareError('공유받은 기도제목이 아닙니다.')
         return ShareDTO(share.receipt_id, share.pray_id, share.pray, share.created_at).__repr__()
     
-    def save_storage(pray_id):
-        share = Share.query.filter_by(pray_id=pray_id).first()
-        if share is None:
-            raise ShareError('공유받은 기도제목이 아닙니다.')
-        pray = Pray.query.filter_by(id=pray_id).first()
-        if pray is None:
-            raise ShareError('존재하지 않는 기도제목입니다.')
-        pray.user_id = g.user_id
-        storage = Storage.query.filter_by(pray_id=pray_id).first()
-        if storage is None:
-            raise ShareError('기도제목을 저장할 수 없습니다.')
+    def save_storage(pray_list):
+        result = []
+        for pray_id in pray_list:
+            share = Share.query.filter_by(pray_id=pray_id).first()
+            if share is None:
+                raise ShareError('공유받은 기도제목이 아닙니다.')
+            pray = Pray.query.filter_by(id=pray_id).first()
+            if pray is None:
+                raise ShareError('존재하지 않는 기도제목입니다.')
+            pray.user_id = g.user_id
+            storage = Storage.query.filter_by(pray_id=pray_id).first()
+            if storage is None:
+                raise ShareError('존재하지 않는 기도제목입니다.')
+            
+            result.append(StorageService.create_storage(pray, storage.deadline + datetime.timedelta(days=15)))
+        return result
         
-        return StorageService.create_storage(pray, storage.deadline)
-        
+
+    def delete_share_list(pray_list):
+        for pray_id in pray_list:
+            share = Share.query.filter_by(pray_id=pray_id).first()
+            if share is None:
+                raise ShareError('공유받은 기도제목이 아닙니다.')
+            db.session.delete(share)
+        db.session.commit()
+        return ShareService.get_share_list()
