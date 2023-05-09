@@ -1,8 +1,8 @@
-name: Deploy Backend on Development Server
+name: Deploy Backend on Production Server
 on:
-  push:
-    branches:
-      - main
+  release:
+    types:
+      - published
 
 jobs:
   deploy:
@@ -10,15 +10,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      
-      - name: Remove Conflictable Files
-        run: |
-          if [ -f Dockerfile ]; then
-            rm Dockerfile
-          fi
-          if [ -f docker-compose.yml ]; then
-            rm docker-compose.yml
-          fi
 
       - name: Send
         uses: appleboy/scp-action@master
@@ -28,7 +19,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           source: "."
-          target: ${{ secrets.PATH }}
+          target: ${{ secrets.PROD_PATH }}
 
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -38,5 +29,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd ${{ secrets.PATH }}
-            ./run.sh
+            cd ${{ secrets.PROD_PATH }}
+            make build-prod
