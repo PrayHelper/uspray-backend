@@ -109,7 +109,7 @@ class StorageDTO:
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            'origin_created_at': self.pray.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            # 'origin_created_at': self.pray.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
 
 
@@ -235,7 +235,10 @@ class StorageService:
 
 
     def get_history(content):
-        storages = Storage.query.filter_by(user_id=g.user_id).filter(Storage.deadline < datetime.datetime.now()).order_by(Storage.created_at.desc()).paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+        storages = Storage.query.filter_by(user_id=g.user_id).\
+            filter(Storage.deadline < datetime.datetime.now()).\
+            order_by(Storage.created_at.desc()).\
+            paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         storage_dtos = [
             StorageDTO(
                 id=storage.id,
@@ -275,6 +278,7 @@ class PrayService:
         except Exception:
             raise PrayFail('create pray error')
         
+
     def update_pray(content, storage_id) -> PrayDTO:
         try:
             storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()

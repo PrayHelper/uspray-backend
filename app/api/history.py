@@ -25,6 +25,7 @@ class History(Resource):
 		content = pagination.parse_args()
 		return StorageService.get_history(content), 200
 
+
 @history.route('/modify-deadline', methods=['PUT'])
 class HistoryUpdate(Resource):
 	@history.expect(historyModifyModel)
