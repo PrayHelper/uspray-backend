@@ -8,7 +8,7 @@ services:
     ports:
       - "4004:5000"
     volumes:
-      - .:/app
+      - ../:/app
     environment:
       FLASK_APP: app
       APP_CONFIG_FILE: config/production.py
