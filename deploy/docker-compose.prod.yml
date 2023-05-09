@@ -1,0 +1,16 @@
+services:
+  api:
+    container_name: prayhelper-server-prod
+    build:
+      context: ../
+      dockerfile: ./deploy/Dockerfile
+    image: prayhelper-server-dev
+    ports:
+      - "4004:5000"
+    volumes:
+      - .:/app
+    environment:
+      FLASK_APP: app
+      APP_CONFIG_FILE: config/production.py
+      FLASK_DEBUG: true
+    command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
