@@ -4,7 +4,7 @@ services:
     build:
       context: ../
       dockerfile: ./deploy/Dockerfile
-    image: prayhelper-server-prod
+    image: prayhelper-server-dev
     ports:
       - "4002:5000"
     volumes:
@@ -12,6 +12,6 @@ services:
     environment:
       FLASK_APP: app
       APP_CONFIG_FILE: config/production.py
-      FLASK_DEBUG: true
+      FLASK_DEBUG: "true"
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
     
