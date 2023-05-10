@@ -30,7 +30,7 @@ class ShareDTO:
     def __repr__(self):
         return {
             'pray_id': self.pray_id,
-            'share_nickname': self.pray.user.name,
+            'share_name': self.pray.user.name,
             'target': self.pray.target,
             'title': self.pray.title,
             'shared_at': self.shared_at.strftime('%Y-%m-%d %H:%M:%S')
