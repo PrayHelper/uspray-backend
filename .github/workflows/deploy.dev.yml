@@ -19,7 +19,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           source: "."
-          target: ${{ secrets.PATH }}
+          target: ${{ secrets.DEV_PATH }}
 
       - name: Deploy
         uses: appleboy/ssh-action@master
@@ -29,5 +29,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd ${{ secrets.PATH }}
-            ./run.sh
+            cd ${{ secrets.DEV_PATH }}
+            make build-dev
