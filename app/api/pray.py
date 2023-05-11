@@ -16,7 +16,7 @@ prayUpdateModel = pray.model('Pray Update', {
 })
 
 prayListSortBy = pray.parser()
-prayListSortBy.add_argument('sort_by', type=str, required=False, help='sort by', location='args')
+prayListSortBy.add_argument('sort_by', type=str, required=False, help='date or cnt', location='args', default='date')
 
 @pray.route('', methods=['POST', 'GET'])
 class Pray(Resource):
