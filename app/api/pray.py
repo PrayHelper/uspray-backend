@@ -15,6 +15,9 @@ prayUpdateModel = pray.model('Pray Update', {
 	'deadline': fields.Date(required=False, default='2024-08-01', description='pray deadline')
 })
 
+prayListSortBy = pray.parser()
+prayListSortBy.add_argument('sort_by', type=str, required=False, help='sort by', location='args')
+
 @pray.route('', methods=['POST', 'GET'])
 class Pray(Resource):
 	@pray.expect(prayModel)
@@ -27,11 +30,13 @@ class Pray(Resource):
 		return PrayService.create_pray(content['target'], content['title'], content['deadline']), 200
 	
 	@login_required
+	@pray.expect(prayListSortBy)
 	def get(self):
 		"""
 		기도제목 목록을 조회합니다.
 		"""
-		return StorageService.get_storages(), 200
+		args = prayListSortBy.parse_args()
+		return StorageService.get_storages(args['sort_by']), 200
 
 
 @pray.route('/<int:pray_id>', methods=['GET', 'DELETE', 'PUT'])
@@ -75,7 +80,7 @@ class MyPrayDetail(Resource):
 		return PrayService.update_pray(content, pray_id), 200
 	
 
-@pray.route('/increase-count/<int:pray_id>', methods=['PUT'])
+@pray.route('/complete/<int:pray_id>', methods=['PUT'])
 class PrayDetail(Resource):
 		@login_required
 		def put(self, pray_id):
