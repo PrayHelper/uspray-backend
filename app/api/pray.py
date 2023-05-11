@@ -62,26 +62,26 @@ class PrayDetail(Resource):
 	@login_required
 	def put(self, pray_id):
 		"""
-		기도제목을 수정합니다. (공유 받은 기도제목, deadline만 수정 가능)
+		기도제목을 수정합니다. *공유 받은 기도제목, deadline만 수정 가능*
 		"""
 		content = request.json
 		return StorageService.update_storage(pray_id, content), 200
 	
 
 @pray.route('/my/<int:pray_id>', methods=['PUT'])
-class MyPrayDetail(Resource):
+class MyPrayEdit(Resource):
 	@login_required
 	@pray.expect(prayModel)
 	def put(self, pray_id):
 		"""
-		기도제목을 수정합니다. (공유 전 나의 기도제목만 수정 가능)
+		나의 기도제목을 수정합니다. *공유 전 나의 기도제목만 수정 가능*
 		"""
 		content = request.json
 		return PrayService.update_pray(content, pray_id), 200
 	
 
 @pray.route('/complete/<int:pray_id>', methods=['PUT'])
-class PrayDetail(Resource):
+class PrayComplete(Resource):
 		@login_required
 		def put(self, pray_id):
 			"""

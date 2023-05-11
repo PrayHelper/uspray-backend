@@ -7,6 +7,7 @@ from app.models import db
 from app.models.user import User
 import bcrypt
 import re
+from flask import g
 
 @dataclass
 class UserDTO:
@@ -137,3 +138,19 @@ class UserService:
         user_dto.save()
         return user_dto
 
+    def update_phone(phone) -> UserDTO:
+        """
+        유저의 전화번호를 수정합니다.
+        """
+        phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
+        phone_reg = bool(re.match(phone_pattern, phone))
+        if not phone_reg:
+            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
+
+        user = User.query.filter_by(phone=phone).first()
+        if user is not None:
+            raise SignUpFail("중복된 전화번호가 존재합니다.")
+        user = User.query.filter_by(id=g.user_id).first()
+        user.phone = phone
+        db.session.commit()
+        return user

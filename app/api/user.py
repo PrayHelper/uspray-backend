@@ -7,6 +7,7 @@ import os
 
 from app.models.user import User
 from app.utils.user import UserDTO, UserService
+from app.decorators.login_required import login_required
 
 user = Namespace('user', description='user test API')
 
@@ -33,6 +34,9 @@ findPwModel = user.clone('FindPw', findIdModel, {
     'id': fields.String(required=True, default='userid', description='user id')
 })
 
+resetPasswordModel = user.model('ResetPassword', {
+    'phone': fields.String(required=True, default='01012345678', description='user phone')
+})
 
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
@@ -133,15 +137,30 @@ class FindPassword(Resource):
         return { 'message': u.uid }, 200
     
 
-@user.route('/reset/password', methods=['POST'])
+@user.route('/reset/password', methods=['PUT'])
 class ResetPassword(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
     @user.expect(loginModel)
-    def post(self):
+    def put(self):
         """
         ResetPassword
         """
         content = request.json
         UserService.update_password(content['id'], content['password'])
         return { 'message' : '비밀번호가 변경되었습니다.' }, 200
+    
+
+@user.route('/reset/phone', methods=['PUT'])
+class ResetPhone(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(resetPasswordModel)
+    @login_required
+    def put(self):
+        """
+        ResetPhone
+        """
+        content = request.json
+        UserService.update_phone(content['phone'])
+        return { 'message' : '전화번호가 변경되었습니다.' }, 200
