@@ -1,5 +1,5 @@
 from flask_restx import Namespace, Resource, fields
-from flask import request
+from flask import request, g
 import bcrypt
 import datetime
 import jwt
@@ -38,6 +38,10 @@ resetPasswordModel = user.model('ResetPassword', {
     'phone': fields.String(required=True, default='01012345678', description='user phone')
 })
 
+
+checkPasswordModel = user.parser()
+checkPasswordModel.add_argument('password', type=str, required=True, help='user password', location='args')
+
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
     @user.expect(userModel)
@@ -54,7 +58,7 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        user_dao = UserService.create_user(user_dto)
+        UserService.create_user(user_dto)
         return { 'message': '회원가입 되었습니다' }, 200
 
 
@@ -120,23 +124,6 @@ class FindId(Resource):
         return { 'message': u.uid }, 200
     
 
-@user.route('/find/password', methods=['POST'])
-class FindPassword(Resource):
-    @user.doc(responses={200: 'OK'})
-    @user.doc(responses={400: 'Bad Request'})
-    @user.expect(findPwModel)
-    def post(self):
-        """
-        FindPassword
-        """
-        content = request.json
-
-        u = User.query.filter_by(name=content['name'], phone=content['phone'], uid=content['id']).first()
-        if u is None:
-            return { 'message' : '유저가 존재하지 않습니다.' }, 400
-        return { 'message': u.uid }, 200
-    
-
 @user.route('/reset/password', methods=['PUT'])
 class ResetPassword(Resource):
     @user.doc(responses={200: 'OK'})
@@ -164,3 +151,21 @@ class ResetPhone(Resource):
         content = request.json
         UserService.update_phone(content['phone'])
         return { 'message' : '전화번호가 변경되었습니다.' }, 200
+    
+
+@user.route('/check/pw', methods=['POST'])
+class CheckPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(checkPasswordModel)
+    @login_required
+    def post(self):
+        """
+        CheckPassword
+        """
+        content = checkPasswordModel.parse_args()
+        user = g.user
+        if bcrypt.checkpw(content['password'].encode('UTF-8'), user.password.encode('UTF-8')):
+            return { 'message' : '비밀번호가 일치합니다.' }, 200
+        else:
+            return { 'message' : '비밀번호가 일치하지 않습니다.' }, 400
