@@ -8,6 +8,7 @@ history = Namespace('history', description='history test API')
 pagination = history.parser()
 pagination.add_argument('page', required=False, type=int, default=1)
 pagination.add_argument('per_page', required=False, type=int, default=15)
+pagination.add_argument('sort_by', required=False, type=str, default='date')
 
 historyModifyModel = history.model('Modify Deadline', {
 	'pray_id': fields.Integer(required=False, description='pray id'),
@@ -26,7 +27,7 @@ class History(Resource):
 		return StorageService.get_history(content), 200
 
 
-@history.route('/modify-deadline', methods=['PUT'])
+@history.route('/modify', methods=['PUT'])
 class HistoryUpdate(Resource):
 	@history.expect(historyModifyModel)
 	@login_required

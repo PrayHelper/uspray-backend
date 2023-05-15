@@ -238,10 +238,16 @@ class StorageService:
 
 
     def get_history(content):
-        storages = Storage.query.filter_by(user_id=g.user_id).\
-            filter(Storage.deadline < datetime.datetime.now()).\
-            order_by(Storage.created_at.desc()).\
-            paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+        if content['sort_by'] == 'cnt':
+            storages = Storage.query.filter_by(user_id=g.user_id).\
+                filter(Storage.deadline < datetime.datetime.now()).\
+                order_by(Storage.pray_cnt.desc()).\
+                paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+        else:
+            storages = Storage.query.filter_by(user_id=g.user_id).\
+                filter(Storage.deadline < datetime.datetime.now()).\
+                order_by(Storage.created_at.desc()).\
+                paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         storage_dtos = [
             StorageDTO(
                 id=storage.id,
