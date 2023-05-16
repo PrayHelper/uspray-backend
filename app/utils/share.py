@@ -80,7 +80,7 @@ class ShareService:
         return [ ShareService.get_share_pray(pray_id) for pray_id in prayList ]
     
     def get_share_list():
-        fifteen_days_ago = datetime.datetime.utcnow() - timedelta(days=15)
+        fifteen_days_ago = datetime.datetime.now() - timedelta(days=15)
 
         share_list = db.session.query(Share, Pray)\
             .join(Pray, Share.pray_id == Pray.id)\

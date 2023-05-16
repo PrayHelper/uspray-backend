@@ -35,7 +35,7 @@ def login_required(f):
                     else:
                         payload = {
                             'id': user_id,
-                            'access_token_exp': (datetime.datetime.utcnow() + datetime.timedelta(minutes=60 * 24)).isoformat()
+                            'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60 * 24)).isoformat()
                         }
                         token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
                         return { 'access_token': token }, 200
