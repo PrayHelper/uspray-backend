@@ -39,8 +39,9 @@ resetPasswordModel = user.model('ResetPassword', {
 })
 
 
-checkPasswordModel = user.parser()
-checkPasswordModel.add_argument('password', type=str, required=True, help='user password', location='args')
+checkPasswordModel = user.model('CheckPassword', {
+    'password': fields.String(required=True, default='password', description='user password')
+})
 
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
@@ -163,7 +164,7 @@ class CheckPassword(Resource):
         """
         CheckPassword
         """
-        content = checkPasswordModel.parse_args()
+        content = request.json
         user = g.user
         if bcrypt.checkpw(content['password'].encode('UTF-8'), user.password.encode('UTF-8')):
             return { 'message' : '비밀번호가 일치합니다.' }, 200
