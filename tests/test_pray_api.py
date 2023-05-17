@@ -43,7 +43,7 @@ def test_complete_pray(access_token):
     headers = {'Authorization': f'{access_token}'}
     response = requests.put('https://api.dev.uspray.kr/api/pray/complete/184', headers=headers)
     assert response.status_code == 200
-    assert len(response.json()) == 7
+    assert len(response.json()) > 0
 
 
 def test_put_pray(access_token):

@@ -129,13 +129,14 @@ class FindId(Resource):
 class ResetPassword(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
-    @user.expect(loginModel)
+    @login_required
+    @user.expect(checkPasswordModel)
     def put(self):
         """
         ResetPassword
         """
         content = request.json
-        UserService.update_password(content['id'], content['password'])
+        UserService.update_password(content['password'])
         return { 'message' : '비밀번호가 변경되었습니다.' }, 200
     
 
@@ -153,7 +154,7 @@ class ResetPhone(Resource):
         UserService.update_phone(content['phone'])
         return { 'message' : '전화번호가 변경되었습니다.' }, 200
     
-
+    
 @user.route('/check/pw', methods=['POST'])
 class CheckPassword(Resource):
     @user.doc(responses={200: 'OK'})
@@ -167,6 +168,7 @@ class CheckPassword(Resource):
         content = request.json
         user = g.user
         if bcrypt.checkpw(content['password'].encode('UTF-8'), user.password.encode('UTF-8')):
-            return { 'message' : '비밀번호가 일치합니다.' }, 200
+            return { 'message' : True }, 200
         else:
-            return { 'message' : '비밀번호가 일치하지 않습니다.' }, 400
+            return { 'message' : False }, 200
+    

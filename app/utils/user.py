@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Union
 from uuid import UUID
-from app.utils.error_handler import SignUpFail
+from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
 from app.models.user import User
@@ -83,20 +83,19 @@ class UserDTO:
     
 
 class UserService:
-    def update_password(user_id, password):
-        user = User.query.filter_by(uid=user_id).first()
+    def update_password(password):
+        user = User.query.filter_by(id=g.user_id).first()
         if user is None:
-            raise Exception("존재하지 않는 유저입니다.")
+            raise UserFail("존재하지 않는 유저입니다.")
         
         pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
         pw_reg = bool(re.match(pw_pattern,password))
         if not pw_reg:
-            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+            raise UserFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
         
         new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
         user.password = new_password.decode('UTF-8')
         db.session.commit()
-        return str(new_password)
 
 
     def create_user(user) -> 'UserDTO':
