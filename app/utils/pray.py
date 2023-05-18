@@ -92,7 +92,6 @@ class StorageDTO:
             'id': self.id,
             'target': self.pray.target,
             'title': self.pray.title,
-            # 'pray_user_id': str(self.pray.user_id),
             'user_id': str(self.user_id),
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
@@ -101,6 +100,7 @@ class StorageDTO:
 
 
     def history(self):
+        origin_pray = Storage.query.filter_by(pray_id=self.pray_id).order_by(Storage.created_at).first()
         return {
             'id': self.id,
             'target': self.pray.target,
@@ -109,7 +109,8 @@ class StorageDTO:
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            # 'origin_created_at': self.pray.created_at.strftime("%Y-%m-%d %H:%M:%S")
+            'origin_created_at': origin_pray.created_at.strftime("%Y-%m-%d %H:%M:%S"),
+            'origin_user_nickname': self.pray.user.name
         }
 
 
@@ -291,14 +292,17 @@ class StorageService:
 
 
     def get_history(content):
+        current_time = datetime.datetime.now()
+        today = current_time.date()
+        midnight = datetime.datetime.combine(today, datetime.datetime.min.time())
         if content['sort_by'] == 'cnt':
             storages = Storage.query.filter_by(user_id=g.user_id).\
-                filter(Storage.deadline < datetime.datetime.now()).\
+                filter(Storage.deadline < midnight).\
                 order_by(Storage.pray_cnt.desc()).\
                 paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         else:
             storages = Storage.query.filter_by(user_id=g.user_id).\
-                filter(Storage.deadline < datetime.datetime.now()).\
+                filter(Storage.deadline < midnight).\
                 order_by(Storage.created_at.desc()).\
                 paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         storage_dtos = [
