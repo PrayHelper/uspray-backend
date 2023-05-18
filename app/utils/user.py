@@ -153,3 +153,14 @@ class UserService:
         user.phone = phone
         db.session.commit()
         return user
+
+    def delete_user():
+        """
+        유저를 삭제합니다.
+        """
+        user = User.query.filter_by(id=g.user_id).first()
+        if user is None:
+            raise UserFail("존재하지 않는 유저입니다.")
+        user.deleted_at = datetime.datetime.now()
+        db.session.commit()
+        return user

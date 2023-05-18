@@ -5,7 +5,7 @@ import datetime
 from flask import g
 from app.models import db
 from typing import List, Optional, Union
-from app.models.pray import Pray, Storage
+from app.models.pray import Pray, Storage, Complete
 
 class PrayDTO:
     id: Union[int, None]
@@ -141,11 +141,32 @@ class StorageDTO:
 
 class StorageService:
     def get_storages(args='date') -> List[StorageDTO]:
+        current_time = datetime.datetime.now()
+        today = current_time.date()
+        midnight = datetime.datetime.combine(today, datetime.datetime.min.time())
         if args == 'date':
-            storages = Storage.query.filter_by(user_id=g.user_id).filter(Storage.deadline >= datetime.datetime.now()).order_by(Storage.deadline).all()
-        elif args == 'cnt': 
-            storages = Storage.query.filter_by(user_id=g.user_id).filter(Storage.deadline >= datetime.datetime.now()).order_by(Storage.pray_cnt.desc()).all()
-        storage_dtos = [
+            storages_completed = Storage.query.join(Complete)\
+                        .filter_by(user_id=g.user_id)\
+                        .filter(Storage.deadline >= datetime.datetime.now())\
+                        .filter(Complete.created_at >= midnight)\
+                        .order_by(Storage.deadline).all()
+            storages_uncompleted = Storage.query.outerjoin(Complete)\
+                        .filter(Storage.user_id == g.user_id)\
+                        .filter(Storage.deadline >= datetime.datetime.now())\
+                        .filter(Complete.created_at == None)\
+                        .order_by(Storage.deadline).all()
+        elif args == 'cnt':
+            storages_completed = Storage.query.join(Complete)\
+                        .filter_by(user_id=g.user_id)\
+                        .filter(Storage.deadline >= datetime.datetime.now())\
+                        .filter(Complete.created_at >= midnight)\
+                        .order_by(Storage.pray_cnt.desc()).all()
+            storages_uncompleted = Storage.query.outerjoin(Complete)\
+                        .filter(Storage.user_id == g.user_id)\
+                        .filter(Storage.deadline >= datetime.datetime.now())\
+                        .filter(Complete.created_at < midnight or Complete.created_at == None)\
+                        .order_by(Storage.pray_cnt.desc()).all()
+        storage_completed_dtos = [
             StorageDTO(
                 id=storage.id,
                 pray_id=storage.pray_id,
@@ -155,9 +176,25 @@ class StorageService:
                 created_at=storage.created_at,
                 pray=storage.pray
             ).__repr__()
-            for storage in storages
+            for storage in storages_completed
         ]
-        return (storage_dtos)
+        storage_uncompleted_dtos = [
+            StorageDTO(
+                id=storage.id,
+                pray_id=storage.pray_id,
+                user_id=storage.user_id,
+                pray_cnt=storage.pray_cnt,
+                deadline=storage.deadline,
+                created_at=storage.created_at,
+                pray=storage.pray
+            ).__repr__()
+            for storage in storages_uncompleted
+        ]
+
+        return {
+            'completed': storage_completed_dtos,
+            'uncompleted': storage_uncompleted_dtos
+        }
     
 
     def get_storage(storage_id) -> StorageDTO:
@@ -232,6 +269,8 @@ class StorageService:
             StorageFail('storage not found')
         try:
             storage.pray_cnt += 1
+            complete = Complete(storage_id=storage.id, user_id=storage.user_id)
+            db.session.add(complete)
             db.session.commit()
         except Exception:
             raise StorageFail('increase pray_cnt error')

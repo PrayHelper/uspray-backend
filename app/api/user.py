@@ -43,6 +43,7 @@ checkPasswordModel = user.model('CheckPassword', {
     'password': fields.String(required=True, default='password', description='user password')
 })
 
+
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
     @user.expect(userModel)
@@ -88,7 +89,7 @@ class Login(Resource):
         content = request.json
 
         u = User.query.filter_by(uid=content['id']).first()
-        if u is None:
+        if u is None and u.deleted_at is not None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
         
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
@@ -172,3 +173,16 @@ class CheckPassword(Resource):
         else:
             return { 'message' : False }, 200
     
+
+
+@user.route('/withdrawal', methods=['DELETE'])
+class Withdrawal(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @login_required
+    def delete(self):
+        """
+        Withdrawal
+        """
+        UserService.delete_user()
+        return { 'message' : '회원탈퇴 되었습니다.' }, 204

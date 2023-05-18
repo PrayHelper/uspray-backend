@@ -30,3 +30,14 @@ class Share(db.Model):
     __table_args__ = (
         db.PrimaryKeyConstraint(pray_id, receipt_id), {}
     )
+    
+
+class Complete(db.Model):
+		storage_id = db.Column(db.Integer, db.ForeignKey('storage.id', ondelete='CASCADE'), nullable=False)
+		storage = db.relationship('Storage', backref=db.backref('complete'))
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+		user = db.relationship('User', backref=db.backref('complete_set'))
+		created_at = db.Column(db.DateTime, default=datetime.datetime.now(), nullable=False)
+		__table_args__ = (
+				db.PrimaryKeyConstraint(storage_id, user_id), {}
+		)

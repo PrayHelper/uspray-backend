@@ -22,7 +22,7 @@ def login_required(f):
                         raise InvalidTokenError("access token expired")
                     else:
                         u = User.query.filter_by(id=user_id).first()
-                        if u is not None:
+                        if u is not None and u.deleted_at is None:
                             g.user_id = user_id
                             g.user = u
                         else:
