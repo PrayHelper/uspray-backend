@@ -85,7 +85,18 @@ class PrayComplete(Resource):
 		@login_required
 		def put(self, pray_id):
 			"""
-			기도를 완료합니다.
+			기도를 완료합니다. 오늘의 기도를 완료한 경우, 기도횟수를 증가시킵니다.
 			"""
 			StorageService.increase_cnt(pray_id)
+			return StorageService.get_storages(), 200
+		
+
+@pray.route('/finish/<int:pray_id>', methods=['PUT'])
+class PrayFinish(Resource):
+		@login_required
+		def put(self, pray_id):
+			"""
+			기도제목을 마감합니다. 마감일을 오늘로 수정합니다. 
+			"""
+			StorageService.finish_storage(pray_id)
 			return StorageService.get_storages(), 200
