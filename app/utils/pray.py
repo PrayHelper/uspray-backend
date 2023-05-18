@@ -105,12 +105,11 @@ class StorageDTO:
             'id': self.id,
             'target': self.pray.target,
             'title': self.pray.title,
-            'writer': self.pray.user.name,
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
             'origin_created_at': origin_pray.created_at.strftime("%Y-%m-%d %H:%M:%S"),
-            'origin_user_nickname': self.pray.user.name
+            'origin_user_name': self.pray.user.name
         }
 
 
