@@ -239,8 +239,7 @@ class StorageService:
         try:
             db.session.delete(storage)
             db.session.commit()
-        except Exception as E:
-            raise E
+        except Exception:
             raise StorageFail('delete storage error')
     
 

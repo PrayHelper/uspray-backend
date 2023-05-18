@@ -185,4 +185,4 @@ class Withdrawal(Resource):
         Withdrawal
         """
         UserService.delete_user()
-        return { 'message' : '회원탈퇴 되었습니다.' }, 204
+        return { 'message' : '회원탈퇴 되었습니다.' }, 200
