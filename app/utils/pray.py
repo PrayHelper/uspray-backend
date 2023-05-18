@@ -153,7 +153,7 @@ class StorageService:
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
                         .filter(Storage.deadline >= datetime.datetime.now())\
-                        .filter(Complete.created_at == None)\
+                        .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.deadline).all()
         elif args == 'cnt':
             storages_completed = Storage.query.join(Complete)\
@@ -164,7 +164,7 @@ class StorageService:
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
                         .filter(Storage.deadline >= datetime.datetime.now())\
-                        .filter(Complete.created_at < midnight or Complete.created_at == None)\
+                        .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.pray_cnt.desc()).all()
         storage_completed_dtos = [
             StorageDTO(
