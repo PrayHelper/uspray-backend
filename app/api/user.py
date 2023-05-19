@@ -89,9 +89,10 @@ class Login(Resource):
         content = request.json
 
         u = User.query.filter_by(uid=content['id']).first()
-        if u is None and u.deleted_at is not None:
+        if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
-        
+        if u.deleted_at is not None:
+            return { 'message' : '탈퇴한 회원입니다.' }, 400
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
             access_payload = {
                 'id': str(u.id),
