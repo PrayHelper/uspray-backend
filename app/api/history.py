@@ -35,7 +35,7 @@ class HistoryUpdate(Resource):
 		"""
 		히스토리의 마감기한을 수정합니다.
 		"""
-		pray_id = content['pray_id']
 		content = request.json
+		pray_id = content['pray_id']
 		return StorageService.update_storage(pray_id, content), 200
 	
