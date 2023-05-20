@@ -8,6 +8,7 @@ import os
 from app.models.user import User
 from app.utils.user import UserDTO, UserService
 from app.decorators.login_required import login_required
+from app.utils.error_handler import InvalidTokenError
 
 user = Namespace('user', description='user test API')
 
@@ -96,13 +97,13 @@ class Login(Resource):
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
             access_payload = {
                 'id': str(u.id),
-                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60 * 24)).isoformat()
+                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=1)).isoformat()
             }
             access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
 
             refresh_payload = {
                 'id': str(u.id),
-                'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60 * 24 * 60)).isoformat()
+                'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=2)).isoformat()
             }
             refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
             return { 'access_token': access_token, 'refresh_token': refresh_token }, 200
@@ -187,3 +188,46 @@ class Withdrawal(Resource):
         """
         UserService.delete_user()
         return { 'message' : '회원탈퇴 되었습니다.' }, 200
+    
+
+@user.route('/token', methods=['GET'])
+class Token(Resource):
+    def get(self):
+        """
+        AuthToken
+        """
+        access_token = request.headers.get("Authorization")
+        
+        if access_token:
+            try:
+                payload = jwt.decode(access_token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
+                user_id = payload['id']
+                if 'access_token_exp' in payload:
+                    access_token_exp = payload['access_token_exp']
+                    if datetime.datetime.fromisoformat(access_token_exp) < datetime.datetime.now():
+                        raise InvalidTokenError("access token expired", 403, 403)
+                    else:
+                        u = User.query.filter_by(id=user_id).first()
+                        if u is not None and u.deleted_at is None:
+                            g.user_id = user_id
+                            g.user = u
+                        else:
+                            g.user = None
+                            raise InvalidTokenError("user not found")
+                elif 'refresh_token_exp' in payload:
+                    refresh_token_exp = payload['refresh_token_exp']
+                    if datetime.datetime.fromisoformat(refresh_token_exp) < datetime.datetime.now():
+                        raise InvalidTokenError("refresh token expired", 401, 401)
+                    else:
+                        payload = {
+                            'id': user_id,
+                            'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60 * 24)).isoformat()
+                        }
+                        token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+                        return { 'access_token': token }, 200
+            except jwt.InvalidTokenError:
+                raise InvalidTokenError("invalid token")
+            return { 'message' : 'token is valid' }, 200
+        else:
+            raise InvalidTokenError("token not found")
+

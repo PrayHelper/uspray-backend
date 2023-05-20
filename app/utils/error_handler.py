@@ -47,8 +47,7 @@ class StorageFail(CustomUserError):
     
 
 class InvalidTokenError(CustomUserError):
-    def __init__(self, error_message, dev_error_message=None):
-        status_code = 400
+    def __init__(self, error_message, dev_error_message=None, status_code=400):
         if not dev_error_message:
             dev_error_message = "LoginFail error"
         super().__init__(status_code, dev_error_message, error_message)

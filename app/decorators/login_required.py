@@ -19,26 +19,14 @@ def login_required(f):
                 if 'access_token_exp' in payload:
                     access_token_exp = payload['access_token_exp']
                     if datetime.datetime.fromisoformat(access_token_exp) < datetime.datetime.now():
-                        raise InvalidTokenError("access token expired")
+                        raise InvalidTokenError("access token expired", 403, 403)
+                    u = User.query.filter_by(id=user_id).first()
+                    if u is not None and u.deleted_at is None:
+                        g.user_id = user_id
+                        g.user = u
                     else:
-                        u = User.query.filter_by(id=user_id).first()
-                        if u is not None and u.deleted_at is None:
-                            g.user_id = user_id
-                            g.user = u
-                        else:
-                            g.user = None
-                            raise InvalidTokenError("user not found")
-                elif 'refresh_token_exp' in payload:
-                    refresh_token_exp = payload['refresh_token_exp']
-                    if datetime.datetime.fromisoformat(refresh_token_exp) < datetime.datetime.now():
-                        raise InvalidTokenError("refresh token expired")
-                    else:
-                        payload = {
-                            'id': user_id,
-                            'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60 * 24)).isoformat()
-                        }
-                        token = jwt.encode(payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-                        return { 'access_token': token }, 200
+                        g.user = None
+                        raise InvalidTokenError("user not found")
             except jwt.InvalidTokenError:
                 raise InvalidTokenError("invalid token")
             return f(*args, **kwargs)
