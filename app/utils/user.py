@@ -4,7 +4,7 @@ from uuid import UUID
 from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
-from app.models.user import User
+from app.models.user import User, Notification, UserNotification
 import bcrypt
 import re
 from flask import g
@@ -135,6 +135,15 @@ class UserService:
             phone=user.phone
         )
         user_dto.save()
+
+        notifications = Notification.query.all()
+        for notification in notifications:
+            user_notification = UserNotification(
+                user_id=user_dto.id,
+                notification_id=notification.id,
+                is_enabled=True
+            )
+            user_notification.save()
         return user_dto
 
     def update_phone(phone) -> UserDTO:
@@ -164,3 +173,73 @@ class UserService:
         user.deleted_at = datetime.datetime.now()
         db.session.commit()
         return user
+    
+    def enable_notification(notification_id):
+        """
+        유저의 알림을 활성화합니다.
+        """
+        user_notification = UserNotification.query.filter(UserNotification.user_id == g.user_id, UserNotification.notification_id == notification_id).first()
+        try: 
+            if user_notification is None:
+                new_user_notification = UserNotification(
+                    user_id=g.user_id,
+                    notification_id=notification_id
+                )
+                db.session.add(new_user_notification)
+                db.session.commit()
+            else:
+                user_notification.is_enabled = True
+                db.session.commit()
+        except:
+            db.session.rollback()
+            raise UserFail("알림에서 에러가 발생했습니다.")
+
+    def disable_notification(notification_id):
+        """
+        유저의 알림을 비활성화합니다.
+        """
+        user_notification = UserNotification.query.filter(UserNotification.user_id == g.user_id, UserNotification.notification_id == notification_id).first()
+        try:
+            if user_notification is None:
+                new_user_notification = UserNotification(
+                    user_id=g.user_id,
+                    notification_id=notification_id,
+                    is_enabled=False
+                )
+                db.session.add(new_user_notification)
+                db.session.commit()
+            else:
+                user_notification.is_enabled = False
+                db.session.commit()
+        except:
+            db.session.rollback()
+            raise UserFail("알림에서 에러가 발생했습니다.")
+        
+    
+    def get_user_notifications():
+        """
+        유저의 알림을 가져옵니다.
+        """
+        user_notifications = UserNotification.query.filter(UserNotification.user_id == g.user_id).all()
+        return [
+            {
+                "id": user_notification.notification.id,
+                "content": user_notification.notification.content,
+                "is_enabled": user_notification.is_enabled
+            }
+            for user_notification in user_notifications
+        ]
+    
+
+    def get_notifications():
+        """
+        알림 목록을 가져옵니다.
+        """
+        notifications = Notification.query.all()
+        return [
+            {
+                "id": notification.id,
+                "content": notification.content
+            }
+            for notification in notifications
+        ]

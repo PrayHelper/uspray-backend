@@ -231,3 +231,35 @@ class Token(Resource):
         else:
             raise InvalidTokenError("token not found")
 
+
+@user.route('/notification/<int:notification_id>/enable', methods=['PUT'])
+class NotificationEnable(Resource):
+    @login_required
+    def put(self, notification_id):
+        """
+        NotificationEnable
+        """
+        UserService.enable_notification(notification_id)
+        return { 'message' : '알림이 활성화 되었습니다.' }, 200
+    
+
+@user.route('/notification/<int:notification_id>/disable', methods=['PUT'])
+class NotificationDisable(Resource):
+    @login_required
+    def put(self, notification_id):
+        """
+        NotificationDisable
+        """
+        UserService.disable_notification(notification_id)
+        return { 'message' : '알림이 비활성화 되었습니다.' }, 200
+    
+
+@user.route('/notifications', methods=['GET'])
+class NotificationList(Resource):
+    @login_required
+    def get(self):
+        """
+        UserNotificationList
+        """
+        return UserService.get_user_notifications(), 200
+    

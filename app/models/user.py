@@ -29,3 +29,31 @@ class UserDelete(db.Model):
 class UserDeleteReason(db.Model):
 		id = db.Column(db.Integer, primary_key=True)
 		reason = db.Column(db.String(100), nullable=False)
+
+
+class UserNotificationLog(db.Model):
+		id = db.Column(db.BigInteger, primary_key=True)
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
+		user = db.relationship('User', backref='notification')
+		content = db.Column(db.String(100), nullable=False)
+		notification_id = db.Column(db.Integer, db.ForeignKey('notification.id', ondelete='CASCADE'))
+		notification = db.relationship('Notification', backref='notification')
+		created_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
+
+
+class UserNotification(db.Model):
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
+		user = db.relationship('User', backref='user_notification')
+		notification_id = db.Column(db.Integer, db.ForeignKey('notification.id', ondelete='CASCADE'))
+		notification = db.relationship('Notification', backref='user_notification')
+		is_enabled = db.Column(db.Boolean, nullable=False, default=True)
+		updated_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
+		__table_args__ = (
+				db.PrimaryKeyConstraint(user_id, notification_id), {}
+		)
+
+
+class Notification(db.Model):
+		id = db.Column(db.Integer, primary_key=True)
+		content = db.Column(db.String(100), nullable=False)
+		updated_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())

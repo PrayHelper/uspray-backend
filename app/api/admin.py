@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from flask_restx import Namespace, Resource
+from app.utils.user import UserService
 from .utils import send
 import datetime
 
@@ -30,3 +31,12 @@ class SmsSend(Resource):
                 print(e)
                 return {'message': 'SMS 전송에 실패하였습니다.'}, 400
         return { 'code': verify_code, 'send_time': datetime.datetime.now().strftime('%Y-%m-%d') }
+
+
+@admin.route('/notifications')
+class Notification(Resource):
+    def get(self):
+        """
+        Get notifications
+        """
+        return UserService.get_notifications(), 200
