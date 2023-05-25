@@ -270,7 +270,7 @@ class StorageService:
     def finish_storage(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
         if not storage:
-            StorageFail('storage not found')
+            raise StorageFail('storage not found')
         try:
             storage.deadline = datetime.datetime.now()
             db.session.commit()
@@ -280,14 +280,24 @@ class StorageService:
     def increase_cnt(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
         if not storage:
-            StorageFail('storage not found')
-        try:
+            raise StorageFail('storage not found')
+        complete = Complete.query.filter_by(storage_id=storage.id, user_id=g.user_id).first()
+        current_time = datetime.datetime.now()
+        today = current_time.date()
+        midnight = datetime.datetime.combine(today, datetime.datetime.min.time())
+        try:    
+            if complete:
+                if complete.created_at >= midnight:
+                    raise StorageFail('already increased today', 400)
+                else:
+                    complete.created_at = datetime.datetime.now()
+            else:
+                new_complete = Complete(storage_id=storage.id, user_id=g.user_id)
+                db.session.add(new_complete)
             storage.pray_cnt += 1
-            complete = Complete(storage_id=storage.id, user_id=storage.user_id)
-            db.session.add(complete)
             db.session.commit()
-        except Exception:
-            raise StorageFail('increase pray_cnt error')
+        except Exception as E:
+            raise E
 
 
     def get_history(content):
