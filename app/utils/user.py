@@ -143,7 +143,8 @@ class UserService:
                 notification_id=notification.id,
                 is_enabled=True
             )
-            user_notification.save()
+            db.session.add(user_notification)
+        db.session.commit()
         return user_dto
 
     def update_phone(phone) -> UserDTO:
