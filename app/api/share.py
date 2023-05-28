@@ -37,6 +37,10 @@ class Share(Resource):
       기도제목 리스트를 공유하고 공유 url을 반환합니다.
       """
       content = request.json
+      for pray_id in content['pray_id_list']:
+        if not ShareService.get_pray(pray_id):
+          return {'message': 'pray not found'}, 404
+
       pray_list = ",".join(str(pray_id) for pray_id in content['pray_id_list'])
       return "https://api.uspray.krapi/share/social?pray_list=" + urllib.parse.quote(pray_list)
     

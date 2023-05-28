@@ -65,6 +65,12 @@ class ShareDTO:
             raise e
 
 class ShareService:
+    def get_pray(pray_id): 
+        pray = Storage.query.filter_by(id=pray_id).first()
+        if pray is None or str(pray.user_id) != g.user_id:
+            raise ShareError('기도제목이 존재하지 않습니다.')
+        return pray
+
     def share_pray(prayList):
         for pray_id in prayList:
           pray = Pray.query.filter_by(id=pray_id).first()
