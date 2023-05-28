@@ -65,17 +65,16 @@ class ShareStorage(Resource):
 
     
 
-@share.route('/social/<string:user_id>', methods=['GET'])
+@share.route('/social', methods=['GET'])
 class SharePrayByLink(Resource):
-    # @login_required
+    @login_required
     @share.expect(pray_list_encoding)
-    def get(self, user_id):
+    def get(self):
       """
       기도제목을 공유합니다. 
       """
       parsed_url = urlparse(request.url)
       query_params = parse_qsl(parsed_url.query)
-      g.user_id = user_id
 
       pray_list_encoding_str = next((val for key, val in query_params if key == 'pray_list'), None)
       if pray_list_encoding_str:
