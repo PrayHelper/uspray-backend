@@ -219,7 +219,7 @@ class StorageService:
         try:
             storage_dto = StorageDTO(
                 pray_id=pray_dto.id,
-                user_id=pray_dto.user_id,
+                user_id=g.user_id,
                 deadline=deadline
             )
             storage_dto.save()
