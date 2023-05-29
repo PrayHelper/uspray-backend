@@ -13,33 +13,33 @@ from app.models.pray import Storage
 
 class ShareDTO:
     receipt_id: uuid
-    pray_id: int
+    storage_id: int
     shared_at: datetime
     pray: PrayDTO
 
-    def __init__(self, receipt_id, pray_id, pray=None, shared_at=None):
+    def __init__(self, receipt_id, storage_id, storage=None, shared_at=None):
         self.receipt_id = receipt_id
-        self.pray_id = pray_id
-        self.pray = pray
+        self.storage_id = storage_id
+        self.storage = storage
         self.shared_at = shared_at
         if not receipt_id:
             raise ShareError('receipt_id is required')
-        if not pray_id:
+        if not storage_id:
             raise ShareError('pray_id is required')
 
     def __repr__(self):
         return {
-            'pray_id': self.pray_id,
-            'share_name': self.pray.user.name,
-            'target': self.pray.target,
-            'title': self.pray.title,
+            'pray_id': self.storage_id,
+            'share_name': self.storage.user.name,
+            'target': self.storage.pray.target,
+            'title': self.storage.pray.title,
             'shared_at': self.shared_at.strftime('%Y-%m-%d %H:%M:%S')
         }
 
     def to_model(self) -> Share:
         return Share(
             receipt_id=self.receipt_id,
-            pray_id=self.pray_id
+            storage_id=self.storage_id
         )
     
     def save(self):
@@ -48,7 +48,7 @@ class ShareDTO:
             db.session.add(share)
             db.session.commit()
             self.shared_at = share.created_at
-            self.pray = share.pray
+            self.storage = share.storage
 
         except Exception as e:
             db.session.rollback()
@@ -65,21 +65,21 @@ class ShareDTO:
             raise e
 
 class ShareService:
-    def get_pray(pray_id): 
-        pray = Storage.query.filter_by(id=pray_id).first()
+    def get_pray(storage_id): 
+        pray = Storage.query.filter_by(id=storage_id).first()
         if pray is None or str(pray.user_id) != g.user_id:
             raise ShareError('기도제목이 존재하지 않습니다.')
         return pray
 
     def share_pray(prayList):
         for pray_id in prayList:
-          pray = Pray.query.filter_by(id=pray_id).first()
+          pray = Storage.query.filter_by(id=pray_id).first()
           if pray is None or pray.user_id == g.user_id:
                 raise ShareError('공유할 수 없는 기도제목입니다.')
-          if Share.query.filter_by(receipt_id=g.user_id, pray_id=pray_id).first() is not None:
+          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id).first() is not None:
                 raise ShareError('이미 공유받은 기도제목입니다.')
           try:
-              share = ShareDTO(receipt_id=g.user_id, pray_id=pray_id)
+              share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id)
               share.save()
           except: 
             raise ShareError('공유받기에 실패했습니다.')
@@ -88,24 +88,18 @@ class ShareService:
     def get_share_list():
         fifteen_days_ago = datetime.datetime.now() - timedelta(days=15)
 
-        share_list = db.session.query(Share, Pray)\
-            .join(Pray, Share.pray_id == Pray.id)\
-            .filter(Share.receipt_id == g.user_id)\
-            .filter(Share.created_at >= fifteen_days_ago)\
-            .filter(Pray.user_id != g.user_id)\
-            .filter(not_(db.session.query(Storage).filter(and_(
-                Storage.user_id == g.user_id,
-                Storage.pray_id == Pray.id
-            )).exists()))\
-            .all()
+        share_list = db.session.query(Share, Storage).join(Storage, Storage.id == Share.storage_id).filter(
+            Share.receipt_id == g.user_id,
+            Storage.deadline > fifteen_days_ago
+        ).all()
 
-        return [ ShareDTO(share.receipt_id, share.pray_id, share.pray, share.created_at).__repr__() for (share, pray) in share_list ]
+        return [ ShareDTO(share.receipt_id, share.storage_id, share.storage, share.created_at).__repr__() for (share, storage) in share_list ]
     
     def get_share_pray(pray_id):
-        share = Share.query.filter_by(pray_id=pray_id).first()
+        share = Share.query.filter_by(storage_id=pray_id).first()
         if share is None:
             raise ShareError('공유받은 기도제목이 아닙니다.')
-        return ShareDTO(share.receipt_id, share.pray_id, share.pray, share.created_at).__repr__()
+        return ShareDTO(share.receipt_id, share.storage_id, share.storage, share.created_at).__repr__()
     
     def save_storage(pray_list):
         result = []
