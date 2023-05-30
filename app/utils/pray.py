@@ -233,7 +233,7 @@ class StorageService:
         if not storage:
             raise StorageFail('storage not found')
 
-        share = Share.query.filter_by(pray_id=storage.pray_id).first()
+        share = Share.query.filter_by(storage_id=storage.pray_id).first()
         if share:
             raise StorageFail('share storage cannot be deleted')
         try:
