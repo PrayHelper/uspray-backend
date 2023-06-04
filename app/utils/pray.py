@@ -147,25 +147,25 @@ class StorageService:
         if args == 'date':
             storages_completed = Storage.query.join(Complete)\
                         .filter_by(user_id=g.user_id)\
-                        .filter(Storage.deadline >= midnight)\
+                        .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter(Complete.created_at >= midnight)\
                         .order_by(Storage.deadline).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
-                        .filter(Storage.deadline >= midnight)\
+                          .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.deadline).all()
         elif args == 'cnt':
             storages_completed = Storage.query.join(Complete)\
                         .filter_by(user_id=g.user_id)\
-                        .filter(Storage.deadline >= midnight)\
+                        .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter(Complete.created_at >= midnight)\
                         .order_by(Storage.pray_cnt.desc()).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
-                        .filter(Storage.deadline >= midnight)\
+                        .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
-                        .order_by(Storage.pray_cnt.desc()).all()
+                        .order_by(Storage.pray_cnt).all()
         storage_completed_dtos = [
             StorageDTO(
                 id=storage.id,
