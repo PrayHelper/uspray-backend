@@ -20,15 +20,16 @@ class Storage(db.Model):
 		created_at = db.Column(db.DateTime(), nullable=False, default=datetime.datetime.now())
 		user = db.relationship('User', backref=db.backref('storage_set'))
 
-
 class Share(db.Model):
     storage_id = db.Column(db.Integer, db.ForeignKey('storage.id', ondelete='CASCADE'), nullable=False)
     storage = db.relationship('Storage', backref=db.backref('share', cascade="delete"))
     receipt_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.datetime.now(), nullable=False)
     deleted_at = db.Column(db.DateTime, nullable=True)
+    pray_id = db.Column(db.Integer, db.ForeignKey('pray.id', ondelete='CASCADE'), nullable=True)
+    pray = db.relationship('Pray', backref=db.backref('share_set'))
     __table_args__ = (
-        db.PrimaryKeyConstraint(storage_id, receipt_id), {}
+        db.PrimaryKeyConstraint(storage_id, receipt_id, pray_id), {}
     )
     
 
