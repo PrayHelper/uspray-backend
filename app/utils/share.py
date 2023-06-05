@@ -80,7 +80,7 @@ class ShareService:
           pray = Storage.query.filter_by(id=pray_id).first()
           if pray is None or pray.user_id == g.user_id:
                 raise ShareError('공유할 수 없는 기도제목입니다.')
-          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id).first() is not None:
+          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id).first():
                 raise ShareError('이미 공유받은 기도제목입니다.')
           try:
               share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id, pray_id=pray.pray_id)
@@ -93,7 +93,7 @@ class ShareService:
         fifteen_days_ago = datetime.datetime.now() - timedelta(days=15)
 
         subq = select(Storage.pray_id).where(Storage.user_id == g.user_id)
-        share_list = Share.query.filter(not_(Share.pray_id.in_(subq))).filter(Share.deleted_at==None, Share.created_at > fifteen_days_ago).all()
+        share_list = Share.query.filter(not_(Share.pray_id.in_(subq))).filter(Share.deleted_at==None, Share.created_at > fifteen_days_ago).order_by(Share.created_at.desc()).all()
         return [ ShareDTO(share.receipt_id, share.storage_id, share.pray_id, share.storage, share.created_at).__repr__() for share in share_list ]
     
     def get_share_pray(storage_id):
