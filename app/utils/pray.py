@@ -265,7 +265,6 @@ class StorageService:
                 created_at=storage.created_at,
                 pray=storage.pray
             ).__repr__()
-
     
     def finish_storage(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
@@ -357,10 +356,10 @@ class PrayService:
     def update_pray(content, storage_id) -> PrayDTO:
         try:
             storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
-            shared_storage = Storage.query.filter_by(pray_id=storage.pray_id).all()
             if not storage:
                 raise PrayFail('pray not found')
-            elif len(shared_storage) > 1:
+            shared_storage = Storage.query.filter_by(pray_id=storage.pray_id).all()
+            if len(shared_storage) > 1:
                 raise PrayFail('can not update shared pray')
             elif str(storage.pray.user_id) != str(g.user_id):
                 raise PrayFail('can not update other user pray')
