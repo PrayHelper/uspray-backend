@@ -1,5 +1,7 @@
 FROM python:3.10-slim
 
+ENV TZ=Asia/Seoul
+
 WORKDIR /app
 
 RUN pip3 install --upgrade pip && \
