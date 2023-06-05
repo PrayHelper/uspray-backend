@@ -23,7 +23,6 @@ class PrayDTO:
             raise PrayFail('target is required')
         if not title:
             raise PrayFail('title is required')
- 
 
     def __repr__(self):
         return {
@@ -100,7 +99,7 @@ class StorageDTO:
 
 
     def history(self):
-        origin_pray = Storage.query.filter_by(pray_id=self.pray_id).order_by(Storage.created_at).first()
+        origin_pray = Storage.query.filter_by(pray_id=self.pray_id).filter(Storage.deleted_at == None).order_by(Storage.created_at).first()
         return {
             'id': self.id,
             'target': self.pray.target,
@@ -149,20 +148,24 @@ class StorageService:
                         .filter_by(user_id=g.user_id)\
                         .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter(Complete.created_at >= midnight)\
+                        .filter(Storage.deleted_at == None)\
                         .order_by(Storage.deadline).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
-                          .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
+                        .filter(Storage.deleted_at == None)\
+                        .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.deadline).all()
         elif args == 'cnt':
             storages_completed = Storage.query.join(Complete)\
                         .filter_by(user_id=g.user_id)\
+                        .filter(Storage.deleted_at == None)\
                         .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter(Complete.created_at >= midnight)\
                         .order_by(Storage.pray_cnt.desc()).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
+                        .filter(Storage.deleted_at == None)\
                         .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.pray_cnt).all()
@@ -198,7 +201,7 @@ class StorageService:
     
 
     def get_storage(storage_id) -> StorageDTO:
-        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             raise StorageFail('storage not found')
         try:
@@ -221,6 +224,7 @@ class StorageService:
                 pray_id=pray_dto.id,
                 user_id=g.user_id,
                 deadline=deadline
+                # created_at=datetime.datetime.now()
             )
             storage_dto.save()
             return storage_dto.__repr__()
@@ -229,22 +233,22 @@ class StorageService:
         
 
     def delete_storage(storage_id):
-        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             raise StorageFail('storage not found')
 
-        share = Share.query.filter_by(storage_id=storage.pray_id).first()
+        share = Share.query.filter_by(pray_id=storage.pray_id).filter(Share.receipt_id != g.user_id).first()
         if share:
             raise StorageFail('share storage cannot be deleted')
         try:
-            db.session.delete(storage)
+            storage.deleted_at = datetime.datetime.now()
             db.session.commit()
         except Exception:
             raise StorageFail('delete storage error')
     
 
     def update_storage(storage_id, content) -> StorageDTO:
-        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             StorageFail('storage not found')
        
@@ -267,7 +271,7 @@ class StorageService:
             ).__repr__()
     
     def finish_storage(storage_id):
-        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             raise StorageFail('storage not found')
         try:
@@ -277,7 +281,7 @@ class StorageService:
             raise StorageFail('finish storage error')
 
     def increase_cnt(storage_id):
-        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+        storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             raise StorageFail('storage not found')
         complete = Complete.query.filter_by(storage_id=storage.id, user_id=g.user_id).first()
@@ -304,15 +308,17 @@ class StorageService:
         today = current_time.date()
         midnight = datetime.datetime.combine(today, datetime.datetime.min.time())
         if content['sort_by'] == 'cnt':
-            storages = Storage.query.filter_by(user_id=g.user_id).\
-                filter(Storage.deadline < midnight).\
-                order_by(Storage.pray_cnt.desc()).\
-                paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+            storages = Storage.query.filter_by(user_id=g.user_id)\
+                .filter(Storage.deadline < midnight)\
+                .filter(Storage.deleted_at == None)\
+                .order_by(Storage.pray_cnt.desc())\
+                .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         else:
-            storages = Storage.query.filter_by(user_id=g.user_id).\
-                filter(Storage.deadline < midnight).\
-                order_by(Storage.created_at.desc()).\
-                paginate(page=content['page'], per_page=content['per_page'], error_out=False)
+            storages = Storage.query.filter_by(user_id=g.user_id)\
+                .filter(Storage.deadline < midnight)\
+                .filter(Storage.deleted_at == None)\
+                .order_by(Storage.created_at.desc())\
+                .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         storage_dtos = [
             StorageDTO(
                 id=storage.id,
@@ -355,10 +361,10 @@ class PrayService:
 
     def update_pray(content, storage_id) -> PrayDTO:
         try:
-            storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).first()
+            storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
             if not storage:
                 raise PrayFail('pray not found')
-            shared_storage = Storage.query.filter_by(pray_id=storage.pray_id).all()
+            shared_storage = Share.query.filter_by(pray_id=storage.pray_id).all()
             if len(shared_storage) > 1:
                 raise PrayFail('can not update shared pray')
             elif str(storage.pray.user_id) != str(g.user_id):
