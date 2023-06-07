@@ -244,3 +244,16 @@ class UserService:
             }
             for notification in notifications
         ]
+
+    def update_device_token(device_token):
+        """
+        유저의 디바이스 토큰을 저장합니다.
+        """
+        try:
+            user = User.query.filter_by(id=g.user_id).first()
+            user.device_token = device_token
+            db.session.commit()
+            return { "message": "디바이스 토큰이 저장되었습니다." }
+        except:
+            db.session.rollback()
+            raise UserFail("디바이스 토큰 저장에 실패했습니다.")

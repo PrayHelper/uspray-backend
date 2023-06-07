@@ -44,6 +44,9 @@ checkPasswordModel = user.model('CheckPassword', {
     'password': fields.String(required=True, default='password', description='user password')
 })
 
+deviceTokenModel = user.model('DeviceToken', {
+    'device_token': fields.String(required=True, default='device_token', description='device token')
+})
 
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
@@ -263,3 +266,14 @@ class NotificationList(Resource):
         """
         return UserService.get_user_notifications(), 200
     
+
+@user.route('/device/token', methods=['POST'])
+class DeviceToken(Resource):
+    @login_required
+    @user.expect(deviceTokenModel)
+    def post(self):
+        """
+        DeviceToken
+        """
+        content = request.json
+        return UserService.update_device_token(content['device_token']), 200
