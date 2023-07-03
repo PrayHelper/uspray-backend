@@ -109,7 +109,7 @@ class Login(Resource):
                 'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24*60)).isoformat()
             }
             refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-            return { 'access_token': access_token, 'refresh_token': refresh_token }, 200
+            return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.uid }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
 
