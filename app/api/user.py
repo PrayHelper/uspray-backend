@@ -31,6 +31,11 @@ findIdModel = user.model('FindId', {
     'phone': fields.String(required=True, default='01012345678', description='user phone')
 })
 
+checkInformModel = user.model('CheckInform', {
+    'id': fields.String(required=True, default='userid', description='user id'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone')
+})
+
 findPwModel = user.clone('FindPw', findIdModel, {
     'id': fields.String(required=True, default='userid', description='user id')
 })
@@ -130,6 +135,23 @@ class FindId(Resource):
             return { 'message' : '유저가 존재하지 않습니다.' }, 400
         return { 'message': u.uid }, 200
     
+
+@user.route('/check/inform', methods=['POST'])
+class CheckInform(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(checkInformModel)
+    def post(self):
+        """
+        CheckInform
+        """
+        content = request.json
+        u = User.query.filter_by(uid=content['id'], phone=content['phone']).first()
+
+        if u is None:
+            return { 'message' : False }, 200
+        return { 'message': True }, 200
+
 
 @user.route('/reset/password', methods=['PUT'])
 class ResetPassword(Resource):
