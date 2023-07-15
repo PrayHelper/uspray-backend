@@ -83,6 +83,24 @@ class UserDTO:
     
 
 class UserService:
+    def reset_password(user):
+        reset_pw = bcrypt.hashpw(str(user.id).encode('UTF-8'), bcrypt.gensalt())
+        user.reset_pw = reset_pw.decode('UTF-8')
+        db.session.commit()
+        return reset_pw.decode('UTF-8')
+
+    
+    def find_password(user, password):
+        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        pw_reg = bool(re.match(pw_pattern,password))
+        if not pw_reg:
+            raise UserFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+        
+        new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
+        user.password = new_password.decode('UTF-8')
+        db.session.commit()
+
+
     def update_password(password):
         user = User.query.filter_by(id=g.user_id).first()
         if user is None:
