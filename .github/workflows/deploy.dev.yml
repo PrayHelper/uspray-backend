@@ -23,7 +23,7 @@ jobs:
         with:
           host: ${{ env.HOST }}
           username: ${{ env.USERNAME }}
-          key: ${{ env.SSH_KEY }}
+          key: ${{ env.KEY }}
           port: ${{ env.PORT }}
           source: "."
           target: ${{ env.INSTANCE_PATH }}
@@ -33,7 +33,7 @@ jobs:
         with:
           host: ${{ env.HOST }}
           username: ${{ env.USERNAME }}
-          key: ${{ env.SSH_KEY }}
+          key: ${{ env.KEY }}
           port: ${{ env.PORT }}
           script: |
             cd ${{ env.INSTANCE_PATH }}
