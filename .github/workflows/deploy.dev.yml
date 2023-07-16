@@ -2,7 +2,7 @@ name: Deploy Backend on Development Server
 on:
   push:
     branches:
-      - main
+      - feature/cicd
 
 env:
   HOST:     ${{ secrets.HOST }}
