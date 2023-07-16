@@ -1,19 +1,29 @@
-name: Deploy Backend on Production Server
+name: Deploy Backend on Integration Server
+
 on:
-  release:
-    types:
-      - published
+  push:
+    branches:
+      - feature/**
+      - feat/**
 
 env:
   HOST:     ${{ secrets.HOST }}
   USERNAME: ${{ secrets.USERNAME }}
   KEY:      ${{ secrets.SSH_KEY }}
   PORT:     ${{ secrets.PORT }}
-  INSTANCE_PATH: ./backend-prod
+  INSTANCE_PATH: ./backend-intg
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: |
+          echo "test is skipped"
+
   deploy:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/${{ vars.INTG_BRANCH }}'
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -28,7 +38,7 @@ jobs:
           source: "."
           target: ${{ env.INSTANCE_PATH }}
 
-      - name: Deploy
+      - name: Deploy 
         uses: appleboy/ssh-action@master
         with:
           host: ${{ env.HOST }}
@@ -37,4 +47,4 @@ jobs:
           port: ${{ env.PORT }}
           script: |
             cd ${{ env.INSTANCE_PATH }}
-            make build-prod
+            make build-intg
