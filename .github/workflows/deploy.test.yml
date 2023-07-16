@@ -23,7 +23,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/${{ vars.INTG_BRANCH }}'
+    if: github.ref == format('refs/heads/{0}', vars.INTG_BRANCH)
     steps:
       - name: Checkout
         uses: actions/checkout@v2
