@@ -135,6 +135,28 @@ class FindId(Resource):
             return { 'message' : '유저가 존재하지 않습니다.' }, 400
         return { 'message': u.uid }, 200
     
+@user.route('/find/password', methods=['PUT'])
+class FindPassword(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.doc(params={'token': {'description': 'token'}})
+    @user.expect(checkPasswordModel)
+    def put(self):
+        """
+        FindPassword
+        """
+        token = request.args.get('token')
+        if token is None:
+            return { 'message' : 'token을 입력해주세요.' }, 400
+
+        u = User.query.filter_by(reset_pw=token).first()
+        if u is None:
+            return { 'message' : '인증에 실패했습니다.' }, 400
+        
+        content = request.json
+        UserService.find_password(u, content['password'])
+        return { 'message' : '비밀번호가 변경되었습니다.' }, 200
+
 
 @user.route('/check/inform', methods=['POST'])
 class CheckInform(Resource):
@@ -150,7 +172,9 @@ class CheckInform(Resource):
 
         if u is None:
             return { 'message' : False }, 200
-        return { 'message': True }, 200
+        else:
+            token = UserService.reset_password(u)
+            return { 'message': True, 'token': token }, 200
 
 
 @user.route('/reset/password', methods=['PUT'])
