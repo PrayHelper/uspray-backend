@@ -4,6 +4,7 @@ import bcrypt
 import datetime
 import jwt
 import os
+import requests
 
 from app.models.user import User
 from app.utils.user import UserDTO, UserService
@@ -325,23 +326,30 @@ class DeviceToken(Resource):
         return UserService.update_device_token(content['device_token']), 200
 
 
-# @user.route('/oauth/url/<string:type>', methods=['GET'])
-# class OauthUrl(Resource):
-#     @user.doc(responses={200: 'OK'})
-#     @user.doc(responses={400: 'Bad Request'})
-#     @user.doc(params={'type': 'kakao'})
-#     def get(self, type):
-#         """
-#         OAuth URL 가져오기
-#         """
-#         if type == 'kakao':
-#             return { 'url': "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code" \
-#                 % (os.getenv('KAKAO_CLIENT_ID'), os.getenv('KAKAO_REDIRECT_URI'))}, 200
-
 @user.route('/oauth/kakao', methods=['GET'])
 class KakaoOauth(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
     def get(self):
         code = str(request.args.get('code'))
-        return { 'code': code }
+        
+        oauth_token = requests.post(
+            url="https://kauth.kakao.com/oauth/token",
+            headers={
+                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+            },
+            data={
+                "grant_type": "authorization_code",
+                "client_id": os.getenv('KAKAO_API_KEY'),
+                "client_secret": os.getenv('KAKAO_CLIENT_SECRET'),
+                "redirect_uri": os.getenv('KAKAO_URI'),
+                "code": code,
+            }, 
+        ).json()
+
+        access_token = oauth_token["access_token"]
+        profile_request = requests.get(
+            "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {access_token}"}
+        ).json()
+
+        return { 'oauth_token': profile_request }
