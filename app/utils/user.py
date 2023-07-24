@@ -4,7 +4,7 @@ from uuid import UUID
 from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
-from app.models.user import SocialAuth, User, Notification, UserNotification
+from app.models.user import LocalAuth, SocialAuth, User, Notification, UserNotification
 import bcrypt
 import re
 from flask import g
@@ -12,26 +12,18 @@ from flask import g
 @dataclass
 class UserDTO:
     id: Union[UUID, None]
-    uid: str
-    password: str
     name: str
     gender: str
     birth: datetime
     phone: str
 
-    def __init__(self, uid, password, name, gender, birth, phone, id=None):
-        self.uid = uid
-        self.password = password
+    def __init__(self, name, gender, birth, phone, id=None):
         self.name = name
         self.gender = gender
         self.birth = birth
         self.phone = phone
         self.id = id
 
-        if not uid:
-            raise SignUpFail("아이디는 필수 입력 항목입니다.")
-        if not password:
-            raise SignUpFail("비밀번호는 필수 입력 항목입니다.")
         if not name:
             raise SignUpFail("이름은 필수 입력 항목입니다.")
         if not gender:
@@ -44,8 +36,6 @@ class UserDTO:
     def to_model(self) -> User:
         return User(
             id=self.id,
-            uid=self.uid,
-            password=self.password,
             name=self.name,
             gender=self.gender,
             birth=self.birth,
@@ -102,7 +92,7 @@ class UserService:
 
 
     def update_password(password):
-        user = User.query.filter_by(id=g.user_id).first()
+        user = LocalAuth.query.filter_by(user_id=g.user_id).first()
         if user is None:
             raise UserFail("존재하지 않는 유저입니다.")
         
@@ -120,33 +110,31 @@ class UserService:
         """
         새로운 유저를 생성합니다.
         """
-        uid_pattern = r'^[a-z0-9]{6,15}$'
-        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        # uid_pattern = r'^[a-z0-9]{6,15}$'
+        # pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
         phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
-        uid_reg = bool(re.match(uid_pattern, user.uid))
-        pw_reg = bool(re.match(pw_pattern, user.password))
+        # uid_reg = bool(re.match(uid_pattern, user.uid))
+        # pw_reg = bool(re.match(pw_pattern, user.password))
         phone_reg = bool(re.match(phone_pattern, user.phone))
-        if not uid_reg:
-            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
-        if not pw_reg:
-            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+        # if not uid_reg:
+        #     raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+        # if not pw_reg:
+        #     raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
         if not phone_reg:
             raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
 
-        dup_user_id = User.query.filter_by(uid=user.uid).first()
+        # dup_user_id = User.query.filter_by(uid=user.uid).first()
         dup_phone = User.query.filter_by(phone=user.phone).first()
         
-        if dup_user_id is not None:
-            raise SignUpFail("중복된 아이디가 존재합니다.")
+        # if dup_user_id is not None:
+        #     raise SignUpFail("중복된 아이디가 존재합니다.")
         if dup_phone is not None:
             raise SignUpFail("중복된 전화번호가 존재합니다.")
    
-        new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
+        # new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
 
         user_dto = UserDTO(
             id=None,
-            uid=user.uid,
-            password=new_password.decode('UTF-8'),
             name=user.name,
             gender=user.gender,
             birth=user.birth,
@@ -166,6 +154,62 @@ class UserService:
         return user_dto
 
     
+    def create_local_user(user, id, password) -> 'UserDTO':
+        """
+        새로운 로컬 유저를 생성합니다.
+        """
+        uid_pattern = r'^[a-z0-9]{6,15}$'
+        pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+        phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
+        uid_reg = bool(re.match(uid_pattern, id))
+        pw_reg = bool(re.match(pw_pattern, password))
+        phone_reg = bool(re.match(phone_pattern, user.phone))
+        if not uid_reg:
+            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+        if not pw_reg:
+            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+        if not phone_reg:
+            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
+
+        dup_user_id = LocalAuth.query.filter_by(id=id).first()
+        dup_phone = User.query.filter_by(phone=user.phone).first()
+        
+        if dup_user_id is not None:
+            raise SignUpFail("중복된 아이디가 존재합니다.")
+        if dup_phone is not None:
+            raise SignUpFail("중복된 전화번호가 존재합니다.")
+   
+        new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
+
+        user_dto = UserDTO(
+            id=None,
+            name=user.name,
+            gender=user.gender,
+            birth=user.birth,
+            phone=user.phone
+        )
+        user_dto.save()
+
+        local_user = LocalAuth(
+            id=id,
+            user_id=user_dto.id,
+            password=new_password.decode('UTF-8'),
+        )
+        db.session.add(local_user)
+        db.session.commit()
+
+        notifications = Notification.query.all()
+        for notification in notifications:
+            user_notification = UserNotification(
+                user_id=user_dto.id,
+                notification_id=notification.id,
+                is_enabled=True
+            )
+            db.session.add(user_notification)
+        db.session.commit()
+        return user_dto
+
+
     def create_social_auth(user_dto, content):
         social_user = SocialAuth(
             id=content['id'],

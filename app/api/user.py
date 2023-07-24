@@ -6,7 +6,7 @@ import jwt
 import os
 import requests
 
-from app.models.user import SocialAuth, User
+from app.models.user import LocalAuth, SocialAuth, User
 from app.utils.user import UserDTO, UserService
 from app.decorators.login_required import login_required
 from app.utils.error_handler import InvalidTokenError
@@ -74,14 +74,12 @@ class SignUp(Resource):
         """
         content = request.json
         user_dto = UserDTO(
-            uid=content['id'],
-            password=content['password'],
             name=content['name'],
             gender=content['gender'],
             birth=content['birth'],
             phone=content['phone']
         )
-        UserService.create_user(user_dto)
+        UserService.create_local_user(user_dto, content['id'], content['password'])
         return { 'message': '회원가입 되었습니다' }, 200
 
 
@@ -92,7 +90,7 @@ class IdDupCheck(Resource):
         """
         IdDupCheck
         """
-        dupUserId = User.query.filter_by(uid=id).first()
+        dupUserId = LocalAuth.query.filter_by(id=id).first()
         if dupUserId is None:
             return { 'dup': False }, 200
         return { 'dup' : True }, 200
@@ -109,24 +107,24 @@ class Login(Resource):
         """
         content = request.json
 
-        u = User.query.filter_by(uid=content['id']).first()
+        u = LocalAuth.query.filter_by(id=content['id']).first()
         if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
-        if u.deleted_at is not None:
+        if u.user.deleted_at is not None:
             return { 'message' : '탈퇴한 회원입니다.' }, 400
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
             access_payload = {
-                'id': str(u.id),
+                'id': str(u.user_id),
                 'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24)).isoformat()
             }
             access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
 
             refresh_payload = {
-                'id': str(u.id),
+                'id': str(u.user_id),
                 'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24*60)).isoformat()
             }
             refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
-            return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.uid }, 200
+            return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.id }, 200
         else:
             return { 'message' : '비밀번호를 잘못 입력하였습니다.' }, 400
 
@@ -145,7 +143,8 @@ class FindId(Resource):
 
         if u is None:
             return { 'message' : '유저가 존재하지 않습니다.' }, 400
-        return { 'message': u.uid }, 200
+        user = LocalAuth.query.filter_by(user_id=u.id).first()
+        return { 'message': user.id }, 200
     
 @user.route('/find/password', methods=['PUT'])
 class FindPassword(Resource):
@@ -161,7 +160,7 @@ class FindPassword(Resource):
         if token is None:
             return { 'message' : 'token을 입력해주세요.' }, 400
 
-        u = User.query.filter_by(reset_pw=token).first()
+        u = LocalAuth.query.join(User, User.id == LocalAuth.user_id).filter(User.reset_pw==token).first()
         if u is None:
             return { 'message' : '인증에 실패했습니다.' }, 400
         
@@ -180,7 +179,7 @@ class CheckInform(Resource):
         CheckInform
         """
         content = request.json
-        u = User.query.filter_by(uid=content['id'], phone=content['phone']).first()
+        u = User.query.join(LocalAuth, LocalAuth.user_id == User.id).filter(LocalAuth.id == content['id'], User.phone == content['phone']).first()
 
         if u is None:
             return { 'message' : False }, 200
@@ -230,7 +229,7 @@ class CheckPassword(Resource):
         CheckPassword
         """
         content = request.json
-        user = g.user
+        user = g.local_auth
         if bcrypt.checkpw(content['password'].encode('UTF-8'), user.password.encode('UTF-8')):
             return { 'message' : True }, 200
         else:
