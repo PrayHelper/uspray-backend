@@ -16,6 +16,19 @@ class User(db.Model):
 		deleted_at = db.Column(db.DateTime(), nullable=True)
 		reset_pw = db.Column(db.String(200), nullable=True)
 
+class LocalAuth(db.Model):
+		id = db.Column(db.String(100), primary_key=True, nullable=False)
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
+		password = db.Column(db.String(200), nullable=False)
+		user = db.relationship('User', backref='local_auth')
+
+class SocialAuth(db.Model):
+		id = db.Column(db.String(100), primary_key=True, nullable=False)
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
+		social_type = db.Column(db.String(50), nullable=False)
+		access_token = db.Column(db.String(200), nullable=True)
+		connected_at = db.Column(db.DateTime(), nullable=True)
+		user = db.relationship('User', backref='social_auth')
 
 class UserDelete(db.Model):
 		reason_id = db.Column(db.Integer, db.ForeignKey('user_delete_reason.id', ondelete='CASCADE'))
