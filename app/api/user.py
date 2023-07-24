@@ -6,7 +6,7 @@ import jwt
 import os
 import requests
 
-from app.models.user import User
+from app.models.user import SocialAuth, User
 from app.utils.user import UserDTO, UserService
 from app.decorators.login_required import login_required
 from app.utils.error_handler import InvalidTokenError
@@ -52,6 +52,17 @@ checkPasswordModel = user.model('CheckPassword', {
 
 deviceTokenModel = user.model('DeviceToken', {
     'device_token': fields.String(required=True, default='device_token', description='device token')
+})
+
+SocialUserModel = user.model('SocialUser', {
+    'name': fields.String(required=True, default='name', description='user name'),
+    'gender': fields.String(required=True, default='여', description='user gender'),
+    'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
+    'phone': fields.String(required=True, default='01012345678', description='user phone'),
+    'social_id': fields.String(required=True, default='2930588672', description='user social id'),
+    'connected_at': fields.DateTime(required=True, default='2023-07-24T11:06:43Z', description='connected at'),
+    'type': fields.String(required=True, default='kakao', description='connected at'),
+    'access_token': fields.String(required=True, default='access_token', description='access token')
 })
 
 @user.route('/signup', methods=['POST'])
@@ -332,7 +343,7 @@ class KakaoOauth(Resource):
     @user.doc(responses={400: 'Bad Request'})
     def get(self):
         code = str(request.args.get('code'))
-        
+
         oauth_token = requests.post(
             url="https://kauth.kakao.com/oauth/token",
             headers={
@@ -347,15 +358,49 @@ class KakaoOauth(Resource):
             }, 
         ).json()
 
-        return { 'code': code }
-        # access_token = oauth_token["access_token"]
-        # profile_request = requests.get(
-        #     "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {access_token}"}
-        # ).json()
+        kakao_access_token = oauth_token["access_token"]
+        profile_request = requests.get(
+            "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
+        ).json()
 
-        # info = {
-        #     'id': profile_request['oauth_token']['id'],
-        #     'connected_at': profile_request['oauth_token']['connected_at']    
-        # }
+        u = SocialAuth.query.filter_by(id=str(profile_request['id'])).first()
+        if u:
+            #login
+            access_payload = {
+                'id': str(u.user_id),
+                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24)).isoformat()
+            }
+            access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
 
-        # return info
+            refresh_payload = {
+                'id': str(u.user_id),
+                'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24*60)).isoformat()
+            }
+            refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+            return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.id }, 200
+        else:
+            #signup
+            info = {
+                'id': profile_request['id'],
+                'connected_at': profile_request['connected_at'],
+                'access_token': kakao_access_token
+            }
+            return info
+
+
+@user.route('/oauth/signup', methods=['POST'])
+class OauthSignUp(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    @user.expect(SocialUserModel)
+    def post(self):
+        content = request.json
+        user_dto = UserDTO(
+            name=content['name'],
+            gender=content['gender'],
+            birth=content['birth'],
+            phone=content['phone']
+        )
+        UserService.create_user(user_dto)
+        UserService.create_social_auth(user_dto, content)
+        return { 'message': '회원가입 되었습니다' }, 200

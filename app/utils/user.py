@@ -4,7 +4,7 @@ from uuid import UUID
 from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
-from app.models.user import User, Notification, UserNotification
+from app.models.user import SocialAuth, User, Notification, UserNotification
 import bcrypt
 import re
 from flask import g
@@ -164,6 +164,24 @@ class UserService:
             db.session.add(user_notification)
         db.session.commit()
         return user_dto
+
+    
+    def create_social_auth(user_dto, content):
+        social_user = SocialAuth(
+            id=content['id'],
+            user_id=user_dto.id,
+            connected_at=content['connected_at'],
+            social_type=content['type'],
+            access_token=content['access_token']
+        )
+        try:
+            db.session.add(social_user)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            db.session.close()
+            raise SignUpFail('소셜 유저 회원가입에 실패했습니다.')
+
 
     def update_phone(phone) -> UserDTO:
         """
