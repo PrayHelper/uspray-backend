@@ -323,3 +323,25 @@ class DeviceToken(Resource):
         """
         content = request.json
         return UserService.update_device_token(content['device_token']), 200
+
+
+# @user.route('/oauth/url/<string:type>', methods=['GET'])
+# class OauthUrl(Resource):
+#     @user.doc(responses={200: 'OK'})
+#     @user.doc(responses={400: 'Bad Request'})
+#     @user.doc(params={'type': 'kakao'})
+#     def get(self, type):
+#         """
+#         OAuth URL 가져오기
+#         """
+#         if type == 'kakao':
+#             return { 'url': "https://kauth.kakao.com/oauth/authorize?client_id=%s&redirect_uri=%s&response_type=code" \
+#                 % (os.getenv('KAKAO_CLIENT_ID'), os.getenv('KAKAO_REDIRECT_URI'))}, 200
+
+@user.route('/oauth/kakao', methods=['GET'])
+class KakaoOauth(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    def get(self):
+        code = str(request.args.get('code'))
+        return { 'code': code }
