@@ -337,13 +337,11 @@ class DeviceToken(Resource):
         return UserService.update_device_token(content['device_token']), 200
 
 
-@user.route('/oauth/kakao', methods=['GET'])
+@user.route('/oauth/kakao/<string:code>', methods=['GET'])
 class KakaoOauth(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
-    def get(self):
-        code = str(request.args.get('code'))
-
+    def get(self, code):
         oauth_token = requests.post(
             url="https://kauth.kakao.com/oauth/token",
             headers={

@@ -227,7 +227,7 @@ class UserService:
             id=content['id'],
             user_id=user.id,
             connected_at=content['connected_at'],
-            social_type=content['type'],
+            social_type=content['social_type'],
             access_token=content['access_token']
         )
         try:
