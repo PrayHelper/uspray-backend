@@ -5,22 +5,27 @@ import datetime
 
 class User(db.Model):
 		id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+		device_token = db.Column(db.String(200), nullable=True)
+		created_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
+		deleted_at = db.Column(db.DateTime(), nullable=True)
+
+class UserProfile(db.Model):
+		id = db.Column(db.Integer, primary_key=True)
+		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
 		name = db.Column(db.String(150), nullable=False)
 		gender = db.Column(db.String(10), nullable=False)
 		birth = db.Column(db.DateTime(), nullable=False)
 		phone = db.Column(db.String(20), unique=True, nullable=False)
-		device_token = db.Column(db.String(200), nullable=True)
-		created_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
-		deleted_at = db.Column(db.DateTime(), nullable=True)
-		reset_pw = db.Column(db.String(200), nullable=True)
+		user = db.relationship('User', backref='user_profile')
 
-class LocalAuth(db.Model):
+class UserLocalAuth(db.Model):
 		id = db.Column(db.String(100), primary_key=True, nullable=False)
 		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
 		password = db.Column(db.String(200), nullable=False)
+		reset_pw = db.Column(db.String(200), nullable=True)
 		user = db.relationship('User', backref='local_auth')
 
-class SocialAuth(db.Model):
+class UserSocialAuth(db.Model):
 		id = db.Column(db.String(100), primary_key=True, nullable=False)
 		user_id = db.Column(UUID(as_uuid=True), db.ForeignKey('user.id', ondelete='CASCADE'))
 		social_type = db.Column(db.String(50), nullable=False)

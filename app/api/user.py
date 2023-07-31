@@ -6,8 +6,8 @@ import jwt
 import os
 import requests
 
-from app.models.user import LocalAuth, SocialAuth, User
-from app.utils.user import UserDTO, UserService
+from app.models.user import UserLocalAuth, UserSocialAuth, User, UserProfile
+from app.utils.user import UserProfileDTO, UserService
 from app.decorators.login_required import login_required
 from app.utils.error_handler import InvalidTokenError
 
@@ -59,10 +59,7 @@ SocialUserModel = user.model('SocialUser', {
     'gender': fields.String(required=True, default='여', description='user gender'),
     'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
     'phone': fields.String(required=True, default='01012345678', description='user phone'),
-    'social_id': fields.String(required=True, default='2930588672', description='user social id'),
-    'connected_at': fields.DateTime(required=True, default='2023-07-24T11:06:43Z', description='connected at'),
-    'type': fields.String(required=True, default='kakao', description='connected at'),
-    'access_token': fields.String(required=True, default='access_token', description='access token')
+    'user_id': fields.String(required=True, default='UUID', description='user id'),
 })
 
 @user.route('/signup', methods=['POST'])
@@ -73,13 +70,15 @@ class SignUp(Resource):
         Signup
         """
         content = request.json
-        user_dto = UserDTO(
+        user = UserService.create_user()
+        user_profile_dto = UserProfileDTO(
+            user_id=user.id,
             name=content['name'],
             gender=content['gender'],
             birth=content['birth'],
             phone=content['phone']
         )
-        UserService.create_local_user(user_dto, content['id'], content['password'])
+        UserService.create_local_user(user, user_profile_dto, content['id'], content['password'])
         return { 'message': '회원가입 되었습니다' }, 200
 
 
@@ -90,7 +89,7 @@ class IdDupCheck(Resource):
         """
         IdDupCheck
         """
-        dupUserId = LocalAuth.query.filter_by(id=id).first()
+        dupUserId = UserLocalAuth.query.filter_by(id=id).first()
         if dupUserId is None:
             return { 'dup': False }, 200
         return { 'dup' : True }, 200
@@ -107,7 +106,7 @@ class Login(Resource):
         """
         content = request.json
 
-        u = LocalAuth.query.filter_by(id=content['id']).first()
+        u = UserLocalAuth.query.filter_by(id=content['id']).first()
         if u is None:
             return { 'message' : '아이디가 존재하지 않습니다.' }, 400
         if u.user.deleted_at is not None:
@@ -139,13 +138,15 @@ class FindId(Resource):
         FindId
         """
         content = request.json
-        u = User.query.filter_by(name=content['name'], phone=content['phone']).first()
+        u = UserProfile.query.filter_by(name=content['name'], phone=content['phone']).first()
 
         if u is None:
             return { 'message' : '유저가 존재하지 않습니다.' }, 400
-        user = LocalAuth.query.filter_by(user_id=u.id).first()
+        user = UserLocalAuth.query.filter_by(user_id=u.user_id).first()
         return { 'message': user.id }, 200
     
+
+
 @user.route('/find/password', methods=['PUT'])
 class FindPassword(Resource):
     @user.doc(responses={200: 'OK'})
@@ -160,7 +161,7 @@ class FindPassword(Resource):
         if token is None:
             return { 'message' : 'token을 입력해주세요.' }, 400
 
-        u = LocalAuth.query.join(User, User.id == LocalAuth.user_id).filter(User.reset_pw==token).first()
+        u = UserLocalAuth.query.filter_by(reset_pw=token).first()
         if u is None:
             return { 'message' : '인증에 실패했습니다.' }, 400
         
@@ -179,7 +180,7 @@ class CheckInform(Resource):
         CheckInform
         """
         content = request.json
-        u = User.query.join(LocalAuth, LocalAuth.user_id == User.id).filter(LocalAuth.id == content['id'], User.phone == content['phone']).first()
+        u = UserLocalAuth.query.join(UserProfile, UserLocalAuth.user_id == UserProfile.user_id).filter(UserLocalAuth.id == content['id'], UserProfile.phone == content['phone']).first()
 
         if u is None:
             return { 'message' : False }, 200
@@ -217,7 +218,7 @@ class ResetPhone(Resource):
         UserService.update_phone(content['phone'])
         return { 'message' : '전화번호가 변경되었습니다.' }, 200
     
-    
+ 
 @user.route('/check/pw', methods=['POST'])
 class CheckPassword(Resource):
     @user.doc(responses={200: 'OK'})
@@ -362,7 +363,7 @@ class KakaoOauth(Resource):
             "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
         ).json()
 
-        u = SocialAuth.query.filter_by(id=str(profile_request['id'])).first()
+        u = UserSocialAuth.query.filter_by(id=str(profile_request['id'])).first()
         if u:
             #login
             access_payload = {
@@ -379,12 +380,15 @@ class KakaoOauth(Resource):
             return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.id }, 200
         else:
             #signup
-            info = {
+            user = UserService.create_user()
+            content = {
                 'id': profile_request['id'],
                 'connected_at': profile_request['connected_at'],
+                'social_type': 'kakao',
                 'access_token': kakao_access_token
             }
-            return info
+            UserService.create_social_auth(user, content)
+            return { 'message': '회원가입 되었습니다', 'user_id': str(user.id) }, 200
 
 
 @user.route('/oauth/signup', methods=['POST'])
@@ -394,12 +398,12 @@ class OauthSignUp(Resource):
     @user.expect(SocialUserModel)
     def post(self):
         content = request.json
-        user_dto = UserDTO(
+        user_profile = UserProfileDTO(
+            user_id=content['user_id'],
             name=content['name'],
             gender=content['gender'],
             birth=content['birth'],
             phone=content['phone']
         )
-        UserService.create_user(user_dto)
-        UserService.create_social_auth(user_dto, content)
+        user_profile.save()
         return { 'message': '회원가입 되었습니다' }, 200

@@ -3,7 +3,7 @@ from functools import wraps
 import jwt
 import datetime
 from flask import g, request
-from app.models.user import LocalAuth, User
+from app.models.user import UserLocalAuth, User
 from app.utils.error_handler import InvalidTokenError
 
 
@@ -21,7 +21,7 @@ def login_required(f):
                     if datetime.datetime.fromisoformat(access_token_exp) < datetime.datetime.now():
                         raise InvalidTokenError("access token expired", 403, 403)
                     u = User.query.filter_by(id=user_id).first()
-                    local_auth = LocalAuth.query.filter_by(user_id=user_id).first()
+                    local_auth = UserLocalAuth.query.filter_by(user_id=user_id).first()
                     if u is not None and u.deleted_at is None:
                         g.user_id = user_id
                         g.user = u

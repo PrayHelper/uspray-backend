@@ -4,21 +4,23 @@ from uuid import UUID
 from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
-from app.models.user import LocalAuth, SocialAuth, User, Notification, UserNotification
+from app.models.user import UserLocalAuth, UserSocialAuth, User, Notification, UserNotification, UserProfile
 import bcrypt
 import re
 from flask import g
 
 @dataclass
-class UserDTO:
-    id: Union[UUID, None]
+class UserProfileDTO:
+    id: Union[int, None]
+    user_id: UUID
     name: str
     gender: str
     birth: datetime
     phone: str
 
-    def __init__(self, name, gender, birth, phone, id=None):
+    def __init__(self, user_id, name, gender, birth, phone, id=None):
         self.name = name
+        self.user_id = user_id
         self.gender = gender
         self.birth = birth
         self.phone = phone
@@ -34,13 +36,13 @@ class UserDTO:
             raise SignUpFail("전화번호는 필수 입력 항목입니다.")
 
     def to_model(self) -> User:
-        return User(
+        return UserProfile(
             id=self.id,
+            user_id=self.user_id,
             name=self.name,
             gender=self.gender,
             birth=self.birth,
             phone=self.phone,
-            created_at=datetime.datetime.now()
         )
 
     def save(self):
@@ -65,16 +67,16 @@ class UserDTO:
             raise e
     
 
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()
+    # def get_user_by_id(self, user_id):
+    #     return User.query.filter_by(id=user_id).first()
     
-    def get_user_by_id(self, user_id):
-        return User.query.filter_by(id=user_id).first()
+    # def get_user_by_id(self, user_id):
+    #     return User.query.filter_by(id=user_id).first()
     
 
 class UserService:
     def reset_password(user):
-        reset_pw = bcrypt.hashpw(str(user.id).encode('UTF-8'), bcrypt.gensalt())
+        reset_pw = bcrypt.hashpw(str(user.user_id).encode('UTF-8'), bcrypt.gensalt())
         user.reset_pw = reset_pw.decode('UTF-8')
         db.session.commit()
         return reset_pw.decode('UTF-8')
@@ -92,7 +94,7 @@ class UserService:
 
 
     def update_password(password):
-        user = LocalAuth.query.filter_by(user_id=g.user_id).first()
+        user = UserLocalAuth.query.filter_by(user_id=g.user_id).first()
         if user is None:
             raise UserFail("존재하지 않는 유저입니다.")
         
@@ -106,55 +108,64 @@ class UserService:
         db.session.commit()
 
 
-    def create_user(user) -> 'UserDTO':
-        """
-        새로운 유저를 생성합니다.
-        """
-        # uid_pattern = r'^[a-z0-9]{6,15}$'
-        # pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
-        phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
-        # uid_reg = bool(re.match(uid_pattern, user.uid))
-        # pw_reg = bool(re.match(pw_pattern, user.password))
-        phone_reg = bool(re.match(phone_pattern, user.phone))
-        # if not uid_reg:
-        #     raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
-        # if not pw_reg:
-        #     raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
-        if not phone_reg:
-            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
+    # def create_user(user) -> 'UserDTO':
+    #     """
+    #     새로운 유저를 생성합니다.
+    #     """
+    #     uid_pattern = r'^[a-z0-9]{6,15}$'
+    #     pw_pattern = r'^[a-zA-Z0-9!@#$%^&*()_+{}|:"<>?~\[\]\\;\',./]{8,16}$'
+    #     phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
+    #     uid_reg = bool(re.match(uid_pattern, user.uid))
+    #     pw_reg = bool(re.match(pw_pattern, user.password))
+    #     phone_reg = bool(re.match(phone_pattern, user.phone))
+    #     if not uid_reg:
+    #         raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+    #     if not pw_reg:
+    #         raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+    #     if not phone_reg:
+    #         raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
 
-        # dup_user_id = User.query.filter_by(uid=user.uid).first()
-        dup_phone = User.query.filter_by(phone=user.phone).first()
+    #     dup_user_id = User.query.filter_by(uid=user.uid).first()
+    #     dup_phone = User.query.filter_by(phone=user.phone).first()
         
-        # if dup_user_id is not None:
-        #     raise SignUpFail("중복된 아이디가 존재합니다.")
-        if dup_phone is not None:
-            raise SignUpFail("중복된 전화번호가 존재합니다.")
+    #     if dup_user_id is not None:
+    #         raise SignUpFail("중복된 아이디가 존재합니다.")
+    #     if dup_phone is not None:
+    #         raise SignUpFail("중복된 전화번호가 존재합니다.")
    
-        # new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
+    #     new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
 
-        user_dto = UserDTO(
-            id=None,
-            name=user.name,
-            gender=user.gender,
-            birth=user.birth,
-            phone=user.phone
+    #     user_dto = UserDTO(
+    #         id=None,
+    #         name=user.name,
+    #         gender=user.gender,
+    #         birth=user.birth,
+    #         phone=user.phone
+    #     )
+    #     user_dto.save()
+
+    #     notifications = Notification.query.all()
+    #     for notification in notifications:
+    #         user_notification = UserNotification(
+    #             user_id=user_dto.id,
+    #             notification_id=notification.id,
+    #             is_enabled=True
+    #         )
+    #         db.session.add(user_notification)
+    #     db.session.commit()
+    #     return user_dto
+
+
+    def create_user():
+        user = User(
+            created_at=datetime.datetime.now()
         )
-        user_dto.save()
-
-        notifications = Notification.query.all()
-        for notification in notifications:
-            user_notification = UserNotification(
-                user_id=user_dto.id,
-                notification_id=notification.id,
-                is_enabled=True
-            )
-            db.session.add(user_notification)
+        db.session.add(user)
         db.session.commit()
-        return user_dto
+        return user
 
     
-    def create_local_user(user, id, password) -> 'UserDTO':
+    def create_local_user(user, user_profile, id, password) -> 'UserProfileDTO':
         """
         새로운 로컬 유저를 생성합니다.
         """
@@ -163,7 +174,7 @@ class UserService:
         phone_pattern = r'^01([0|1|6|7|8|9])?([0-9]{3,4})?([0-9]{4})$'
         uid_reg = bool(re.match(uid_pattern, id))
         pw_reg = bool(re.match(pw_pattern, password))
-        phone_reg = bool(re.match(phone_pattern, user.phone))
+        phone_reg = bool(re.match(phone_pattern, user_profile.phone))
         if not uid_reg:
             raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
         if not pw_reg:
@@ -171,8 +182,8 @@ class UserService:
         if not phone_reg:
             raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
 
-        dup_user_id = LocalAuth.query.filter_by(id=id).first()
-        dup_phone = User.query.filter_by(phone=user.phone).first()
+        dup_user_id = UserLocalAuth.query.filter_by(id=id).first()
+        dup_phone = UserProfile.query.filter_by(phone=user_profile.phone).first()
         
         if dup_user_id is not None:
             raise SignUpFail("중복된 아이디가 존재합니다.")
@@ -181,18 +192,19 @@ class UserService:
    
         new_password = bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt())
 
-        user_dto = UserDTO(
+        user_profile_dto = UserProfileDTO(
             id=None,
-            name=user.name,
-            gender=user.gender,
-            birth=user.birth,
-            phone=user.phone
+            user_id=user.id,
+            name=user_profile.name,
+            gender=user_profile.gender,
+            birth=user_profile.birth,
+            phone=user_profile.phone
         )
-        user_dto.save()
+        user_profile_dto.save()
 
-        local_user = LocalAuth(
+        local_user = UserLocalAuth(
             id=id,
-            user_id=user_dto.id,
+            user_id=user.id,
             password=new_password.decode('UTF-8'),
         )
         db.session.add(local_user)
@@ -201,19 +213,19 @@ class UserService:
         notifications = Notification.query.all()
         for notification in notifications:
             user_notification = UserNotification(
-                user_id=user_dto.id,
+                user_id=user.id,
                 notification_id=notification.id,
                 is_enabled=True
             )
             db.session.add(user_notification)
         db.session.commit()
-        return user_dto
+        return user_profile_dto
 
 
-    def create_social_auth(user_dto, content):
-        social_user = SocialAuth(
+    def create_social_auth(user, content):
+        social_user = UserSocialAuth(
             id=content['id'],
-            user_id=user_dto.id,
+            user_id=user.id,
             connected_at=content['connected_at'],
             social_type=content['type'],
             access_token=content['access_token']
@@ -227,7 +239,7 @@ class UserService:
             raise SignUpFail('소셜 유저 회원가입에 실패했습니다.')
 
 
-    def update_phone(phone) -> UserDTO:
+    def update_phone(phone) -> UserProfileDTO:
         """
         유저의 전화번호를 수정합니다.
         """
@@ -236,10 +248,10 @@ class UserService:
         if not phone_reg:
             raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
 
-        user = User.query.filter_by(phone=phone).first()
+        user = UserProfile.query.filter_by(phone=phone).first()
         if user is not None:
             raise SignUpFail("중복된 전화번호가 존재합니다.")
-        user = User.query.filter_by(id=g.user_id).first()
+        user = UserProfile.query.filter_by(user_id=g.user_id).first()
         user.phone = phone
         db.session.commit()
         return user
