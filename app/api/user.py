@@ -362,7 +362,7 @@ class KakaoOauth(Resource):
             "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
         ).json()
 
-        u = UserSocialAuth.query.filter_by(id=str(profile_request['id'])).first()
+        u = UserSocialAuth.query.filter_by(id=str(profile_request.get("id"))).first()
         if u:
             #login
             access_payload = {
@@ -381,10 +381,10 @@ class KakaoOauth(Resource):
             #signup
             user = UserService.create_user()
             content = {
-                'id': profile_request['id'],
-                'connected_at': profile_request['connected_at'],
+                'id': str(profile_request.get("id")),
+                'connected_at': str(profile_request.get("connected_at")),
                 'social_type': 'kakao',
-                'access_token': kakao_access_token
+                'access_token': str(kakao_access_token)
             }
             UserService.create_social_auth(user, content)
             return { 'message': '회원가입 되었습니다', 'user_id': str(user.id) }, 200
