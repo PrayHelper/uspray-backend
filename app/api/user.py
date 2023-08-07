@@ -5,6 +5,7 @@ import datetime
 import jwt
 import os
 import requests
+import json
 
 from app.models.user import UserLocalAuth, UserSocialAuth, User, UserProfile
 from app.utils.user import UserProfileDTO, UserService
@@ -342,7 +343,7 @@ class KakaoOauth(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
     def get(self, code):
-        oauth_token = requests.post(
+        result = requests.post(
             url="https://kauth.kakao.com/oauth/token",
             headers={
                 "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
@@ -356,7 +357,8 @@ class KakaoOauth(Resource):
             }, 
         ).json()
 
-        kakao_access_token = oauth_token.access_token
+        oauth_token = json.loads(result)
+        kakao_access_token = oauth_token['access_token']
         profile_request = requests.get(
             "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
         ).json()
