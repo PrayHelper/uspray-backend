@@ -357,9 +357,9 @@ class KakaoOauth(Resource):
             }, 
         ).json()
 
-        # oauth_token = json.loads(str(result))
+        # oauth_token = str(result)
         # kakao_access_token = oauth_token['access_token']
-        return (str(result))
+        return (type(result))
         profile_request = requests.get(
             "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
         ).json()
