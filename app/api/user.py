@@ -351,7 +351,58 @@ class KakaoOauth(Resource):
                 "grant_type": "authorization_code",
                 "client_id": os.getenv('KAKAO_API_KEY'),
                 "client_secret": os.getenv('KAKAO_CLIENT_SECRET'),
-                "redirect_uri": os.getenv('KAKAO_URI_LOCAL'),
+                "redirect_uri": os.getenv('KAKAO_URI'),
+                "code": code,
+            }, 
+        ).json()
+        return (oauth_token)
+        kakao_access_token = oauth_token["access_token"]
+        profile_request = requests.get(
+            "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
+        ).json()
+
+        u = UserSocialAuth.query.filter_by(id=str(profile_request['id'])).first()
+        if u:
+            #login
+            access_payload = {
+                'id': str(u.user_id),
+                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24)).isoformat()
+            }
+            access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+
+            refresh_payload = {
+                'id': str(u.user_id),
+                'refresh_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24*60)).isoformat()
+            }
+            refresh_token = jwt.encode(refresh_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
+            return { 'access_token': access_token, 'refresh_token': refresh_token, 'user_id': u.id }, 200
+        else:
+            #signup
+            user = UserService.create_user()
+            content = {
+                'id': profile_request['id'],
+                'connected_at': profile_request['connected_at'],
+                'social_type': 'kakao',
+                'access_token': kakao_access_token
+            }
+            UserService.create_social_auth(user, content)
+            return { 'message': '회원가입 되었습니다', 'user_id': str(user.id) }, 200
+
+
+@user.route('/oauth/naver/<string:code>', methods=['GET'])
+class KakaoOauth(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    def get(self, code):
+        oauth_token = requests.post(
+            url="https://nid.naver.com/oauth2.0/token",
+            headers={
+                "Content-type": "application/x-www-form-urlencoded;charset=utf-8"
+            },
+            data={
+                "grant_type": "authorization_code",
+                "client_id": os.getenv('KAKAO_API_KEY'),
+                "client_secret": os.getenv('KAKAO_CLIENT_SECRET'),
                 "code": code,
             }, 
         ).json()
