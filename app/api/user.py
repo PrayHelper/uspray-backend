@@ -351,7 +351,7 @@ class KakaoOauth(Resource):
                 "grant_type": "authorization_code",
                 "client_id": os.getenv('KAKAO_API_KEY'),
                 "client_secret": os.getenv('KAKAO_CLIENT_SECRET'),
-                "redirect_uri": os.getenv('KAKAO_URI'),
+                "redirect_uri": os.getenv('KAKAO_URI_LOCAL'),
                 "code": code,
             }, 
         ).json()
