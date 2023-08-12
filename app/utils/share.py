@@ -85,6 +85,8 @@ class ShareService:
           try:
               share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id, pray_id=pray.pray_id)
               share.save()
+              pray.pray.is_shared = True
+              db.session.commit()
           except: 
             raise ShareError('공유받기에 실패했습니다.')
         return [ ShareService.get_share_pray(pray_id) for pray_id in prayList ]

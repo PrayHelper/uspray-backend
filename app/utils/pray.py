@@ -68,8 +68,9 @@ class StorageDTO:
     pray_cnt: Optional[int] = None
     created_at: Union[dataclass, None] = None
     pray: PrayDTO = None
+    is_shared: bool = None
 
-    def __init__(self, pray_id, user_id, deadline, pray_cnt=None, id=None, created_at=None, pray=None):
+    def __init__(self, pray_id, user_id, deadline, pray_cnt=None, id=None, created_at=None, pray=None, is_shared=None):
         self.pray_id = pray_id
         self.user_id = user_id
         self.deadline = deadline
@@ -77,6 +78,7 @@ class StorageDTO:
         self.id = id
         self.created_at = created_at
         self.pray = pray
+        self.is_shared = is_shared
         
         if not user_id:
             raise StorageFail('user_id is required')
@@ -94,6 +96,7 @@ class StorageDTO:
             'user_id': str(self.user_id),
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
+            'is_shared': self.is_shared,
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S")
         }
 
@@ -177,7 +180,8 @@ class StorageService:
                 pray_cnt=storage.pray_cnt,
                 deadline=storage.deadline,
                 created_at=storage.created_at,
-                pray=storage.pray
+                pray=storage.pray,
+                is_shared=storage.pray.is_shared
             ).__repr__()
             for storage in storages_completed
         ]
@@ -189,7 +193,8 @@ class StorageService:
                 pray_cnt=storage.pray_cnt,
                 deadline=storage.deadline,
                 created_at=storage.created_at,
-                pray=storage.pray
+                pray=storage.pray,
+                is_shared=storage.pray.is_shared
             ).__repr__()
             for storage in storages_uncompleted
         ]

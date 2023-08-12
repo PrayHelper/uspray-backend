@@ -8,6 +8,7 @@ class Pray(db.Model):
 		target = db.Column(db.String(50), nullable=False)
 		title = db.Column(db.Text(), nullable=False)
 		user = db.relationship('User', backref=db.backref('pray_set'))
+		is_shared = db.Column(db.Boolean(), nullable=False, default=False)
 
 class Storage(db.Model):
 		id = db.Column(db.Integer, primary_key=True)
