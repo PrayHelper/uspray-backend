@@ -241,14 +241,12 @@ class StorageService:
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
         if not storage:
             raise StorageFail('storage not found')
-        storage_count = Storage.query.filter_by(pray_id=storage.pray_id).filter(Storage.deleted_at == None).count()
-        if storage_count > 1:
-            raise StorageFail('storage cannot be deleted')
-        share = Share.query.filter_by(pray_id=storage.pray_id).filter(Share.deleted_at == None).all()
+        share = Share.query.filter_by(storage_id=storage_id).all()
         try:
             storage.deleted_at = datetime.datetime.now()
-            for s in share:
-                s.deleted_at = datetime.datetime.now()
+            if share:
+                for s in share:
+                    s.deleted_at = datetime.datetime.now()
             db.session.commit()
         except Exception:
             raise StorageFail('delete storage error')
