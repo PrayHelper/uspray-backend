@@ -40,6 +40,15 @@ class UserDTO:
             raise SignUpFail("생일은 필수 입력 항목입니다.")
         if not phone:
             raise SignUpFail("전화번호는 필수 입력 항목입니다.")
+        
+    def __repr__(self):
+        return {
+            'uid': self.uid,
+            'name': self.name,
+            'gender': self.gender,
+            'birth': self.birth.strftime("%Y-%m-%d %H:%M:%S"),
+            'phone': self.phone
+        }
 
     def to_model(self) -> User:
         return User(
@@ -275,3 +284,19 @@ class UserService:
         except:
             db.session.rollback()
             raise UserFail("디바이스 토큰 저장에 실패했습니다.")
+        
+
+    def get_user_info():
+        try:
+            user = User.query.filter_by(id=g.user_id).first()
+            return UserDTO(
+                id=user.id,
+                uid=user.uid,
+                password=user.password,
+                phone=user.phone,
+                gender=user.gender,
+                birth=user.birth,
+                name=user.name,
+            ).__repr__()
+        except Exception as e:
+            raise UserFail("유저 정보를 가져오는데 실패했습니다.")

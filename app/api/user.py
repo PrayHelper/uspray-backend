@@ -323,3 +323,13 @@ class DeviceToken(Resource):
         """
         content = request.json
         return UserService.update_device_token(content['device_token']), 200
+    
+
+@user.route('/info', methods=['GET'])
+class GetUserInfo(Resource):
+    @login_required
+    def get(self):
+        """
+        GetUserInfo
+        """
+        return UserService.get_user_info(), 200
