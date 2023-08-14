@@ -60,7 +60,7 @@ SocialUserModel = user.model('SocialUser', {
     'gender': fields.String(required=True, default='여', description='user gender'),
     'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
     'phone': fields.String(required=True, default='01012345678', description='user phone'),
-    'user_id': fields.String(required=True, default='UUID', description='user id'),
+    'user_id': fields.String(required=True, default='user id', description='user id'),
 })
 
 @user.route('/signup', methods=['POST'])
@@ -399,10 +399,11 @@ class NaverOauth(Resource):
             f"https://nid.naver.com/oauth2.0/token?grant_type=authorization_code&client_id={os.getenv('NAVER_API_KEY')}&client_secret={os.getenv('NAVER_CLIENT_SECRET')}&code={code}"
             ).json()
 
-        kakao_access_token = oauth_token["access_token"]
-        profile_request = requests.get(
-            "https://kapi.kakao.com/v2/user/me", headers={"Authorization": f"Bearer {kakao_access_token}"}
+        naver_access_token = oauth_token.get("access_token")
+        request = requests.get(
+            "https://openapi.naver.com/v1/nid/me", headers={"Authorization": f"Bearer {naver_access_token}"}
         ).json()
+        profile_request = request['response']
 
         u = UserSocialAuth.query.filter_by(id=str(profile_request['id'])).first()
         if u:
@@ -424,12 +425,28 @@ class NaverOauth(Resource):
             user = UserService.create_user()
             content = {
                 'id': profile_request['id'],
-                'connected_at': profile_request['connected_at'],
-                'social_type': 'kakao',
-                'access_token': kakao_access_token
+                'connected_at': datetime.datetime.now(), #naver는 반환값 없음
+                'social_type': 'naver',
+                'access_token': naver_access_token
             }
             UserService.create_social_auth(user, content)
-            return { 'message': '회원가입 되었습니다', 'user_id': str(user.id) }, 200
+            if profile_request['gender'] == 'F':
+                gender = '여자'
+            elif profile_request['gender'] == 'M':
+                gender = '남자'
+            else:
+                gender = ''
+
+            birth = profile_request['birthyear'] + '-' + profile_request['birthday']
+            user_profile = UserProfileDTO(
+                user_id=user.id,
+                name=profile_request['name'],
+                gender=gender,
+                birth=birth,
+                phone=profile_request['mobile']
+            )
+            user_profile.save()
+            return { 'message': '회원가입 되었습니다' }, 200
 
 
 @user.route('/oauth/signup', methods=['POST'])
