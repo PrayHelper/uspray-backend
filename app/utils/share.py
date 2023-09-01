@@ -94,8 +94,8 @@ class ShareService:
     def get_share_list():
         fifteen_days_ago = datetime.datetime.now() - timedelta(days=15)
 
-        subq = select(Storage.pray_id).where(Storage.user_id == g.user_id and Storage.deleted_at != None).subquery()
-        share_list = Share.query.filter(not_(Share.pray_id.in_(subq))).filter(Share.deleted_at==None, Share.created_at > fifteen_days_ago).order_by(Share.created_at.desc()).all()
+        subq = select(Storage.pray_id).where((Storage.user_id == g.user_id) & (Storage.deleted_at != None)).subquery()
+        share_list = Share.query.filter(Share.receipt_id == g.user_id).filter(not_(Share.pray_id.in_(select(subq)))).filter(Share.deleted_at==None, Share.created_at > fifteen_days_ago).order_by(Share.created_at.desc()).all()
         return [ ShareDTO(share.receipt_id, share.storage_id, share.pray_id, share.storage, share.created_at).__repr__() for share in share_list ]
     
     def get_share_pray(storage_id):
