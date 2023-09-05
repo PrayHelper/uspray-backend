@@ -64,7 +64,7 @@ def make_signature(string):
 
 def send_push_notification(title, body, token, data):
     if not firebase_admin._apps:
-        cred = credentials.Certificate('app/key/service-account-file.json')
+        cred = credentials.Certificate('app/service-account-file.json')
         firebase_admin.initialize_app(cred)
     else:
         firebase_admin.get_app()
