@@ -6,6 +6,7 @@ from flask import g
 from app.models import db
 from typing import List, Optional, Union
 from app.models.pray import Pray, Storage, Complete, Share
+from app.api.utils import send_push_notification
 
 class PrayDTO:
     id: Union[int, None]
@@ -303,6 +304,8 @@ class StorageService:
                 new_complete = Complete(storage_id=storage.id, user_id=g.user_id)
                 db.session.add(new_complete)
             storage.pray_cnt += 1
+            if storage.user_id != storage.pray.user_id:
+                send_push_notification(f'{storage.user.name}님이 기도를 완료했습니다.', f'{storage.user.name}님의 기도를 확인해보세요!', [storage.user.device_token], {})
             db.session.commit()
         except Exception as E:
             raise E

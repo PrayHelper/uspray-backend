@@ -6,6 +6,10 @@ import requests
 import json
 import random
 import os
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import messaging
+import json
 
 def send(phone):
     try:
@@ -56,3 +60,24 @@ def make_signature(string):
     string_hmac = hmac.new(secret_key, string, digestmod=hashlib.sha256).digest()
     string_base64 = base64.b64encode(string_hmac).decode('UTF-8')
     return string_base64
+
+
+def send_push_notification(title, body, token, data):
+    if not firebase_admin._apps:
+        cred = credentials.Certificate('app/key/service-account-file.json')
+        firebase_admin.initialize_app(cred)
+    else:
+        firebase_admin.get_app()
+    registration_token = token
+    message = messaging.MulticastMessage(
+        notification=messaging.Notification(
+            title=title,
+            body=body
+        ),
+        data=data,
+        tokens=registration_token,
+    )
+    response = messaging.send_multicast(message)
+    print('Successfully sent message:', response)
+    print('Failure send message:', response.failure_count)
+    return response
