@@ -448,6 +448,52 @@ class NaverOauth(Resource):
             user_profile.save()
             return { 'message': '회원가입 되었습니다' }, 200
 
+#####################################################################################
+
+@user.route('/oauth/apple/<string:code>', methods=['GET'])
+class AppleOauth(Resource):
+    @user.doc(responses={200: 'OK'})
+    @user.doc(responses={400: 'Bad Request'})
+    def get(self, code):
+
+        client_secret = jwt.encode(
+            payload = {
+                "iss": os.getenv('APPLE_TEAM_ID'),
+                "iat": datetime.datetime.now(),
+                "exp": datetime.dattime.now() + datetime.timeelta(seconds = 3000000), #임시
+                "aud": "https://appleid.apple.com",
+                "sub": os.getenv('APPLE_CLIENT_ID')
+            },
+            key = os.getenv('APPLE_KEY_ID'), 
+            algorithm = 'ES256'
+        )
+
+        result = requests.post(
+            url="https://appleid.apple.com/auth/token",
+            headers={
+                "Content-type": "application/x-www-form-urlencoded"
+            },
+            data={
+                "grant_type": "authorization_code",
+                "client_id": os.getenv('APPLE_API_KEY'),
+                "client_secret": client_secret,
+                "redirect_uri": os.getenv('APPLE_REDIRECT_URL'),
+                "code": code,
+            }, 
+        ).json()
+
+        return result
+
+        apple_access_token = result.get("access_token")
+
+
+        try:
+            data = jwt.decode(access_token, options={"verify_signature": False})
+            return social_signin_apple(data)
+        except Exception as e:
+            print(e)
+            return {"res": "INVALID_TOKEN"}, 401
+
 
 @user.route('/oauth/signup', methods=['POST'])
 class OauthSignUp(Resource):
