@@ -282,6 +282,8 @@ class StorageService:
             raise StorageFail('storage not found')
         try:
             storage.deadline = datetime.datetime.now()
+            complete = Complete(storage_id=storage.id, user_id=g.user_id)
+            db.session.add(complete)
             db.session.commit()
         except Exception:
             raise StorageFail('finish storage error')
@@ -313,17 +315,15 @@ class StorageService:
 
     def get_history(content):
         current_time = datetime.datetime.now()
-        today = current_time.date()
-        midnight = datetime.datetime.combine(today, datetime.datetime.min.time())
         if content['sort_by'] == 'cnt':
             storages = Storage.query.filter_by(user_id=g.user_id)\
-                .filter(Storage.deadline < midnight)\
+                .filter(Storage.deadline < current_time)\
                 .filter(Storage.deleted_at == None)\
                 .order_by(Storage.pray_cnt.desc())\
                 .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         else:
             storages = Storage.query.filter_by(user_id=g.user_id)\
-                .filter(Storage.deadline < midnight)\
+                .filter(Storage.deadline < current_time)\
                 .filter(Storage.deleted_at == None)\
                 .order_by(Storage.created_at.desc())\
                 .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
