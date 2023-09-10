@@ -383,7 +383,7 @@ class PrayService:
             if 'title' in content:
                 pray.title = content['title']
             if 'deadline' in content:
-                pray.deadline = content['deadline']
+                storage.deadline = content['deadline']
             db.session.commit()
             return StorageService.get_storage(storage_id)
 
