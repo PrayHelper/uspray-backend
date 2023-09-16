@@ -69,14 +69,18 @@ def send_push_notification(title, body, token, data):
     else:
         firebase_admin.get_app()
     registration_token = token
-    message = messaging.MulticastMessage(
-        notification=messaging.Notification(
-            title=title,
-            body=body
-        ),
-        data=data,
-        tokens=registration_token,
-    )
+    try:
+        message = messaging.MulticastMessage(
+            notification=messaging.Notification(
+                title=title,
+                body=body
+            ),
+            data=data,
+            tokens=registration_token,
+        )
+    except Exception as e:
+        print(e)
+        return { 'res' : 'error occured at send_push_notification' }, 400
     response = messaging.send_multicast(message)
     print('Successfully sent message:', response)
     print('Failure send message:', response.failure_count)

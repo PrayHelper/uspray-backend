@@ -1,6 +1,9 @@
 from flask import Flask
 from flask_restx import Api
-from .api.admin import admin
+from app.api.utils import send_push_notification, send
+from app.utils.user import UserService
+from app.models.user import User
+from .api.admin import Scheduler, admin
 from .api.user import user
 from .api.pray import pray
 from .api.share import share
@@ -9,6 +12,12 @@ import os
 
 from flask_migrate import Migrate
 from flask_cors import CORS
+from apscheduler.schedulers.background import BackgroundScheduler
+
+def Scheduler():
+    user = User.query.filter(User.device_token != None).all()
+    user_device_token = user.device_token
+    response = send_push_notification("오전 8시 기도할 시간입니다", "기도합시다", user_device_token, {})
 
 def create_app():
     app = Flask(__name__)
@@ -49,5 +58,11 @@ def create_app():
     # Error Handler
     from .utils.error_handler import CustomUserError, handle_custom_user_error
     app.register_error_handler(CustomUserError, handle_custom_user_error)
+
+
+    # Scheduler
+    sched = BackgroundScheduler(daemon=True)
+    sched.add_job(Scheduler, 'cron', day_of_week='0-6', hour=8)
+    sched.start() 
 
     return app

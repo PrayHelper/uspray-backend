@@ -4,9 +4,7 @@ from app.utils.user import UserService
 from app.api.utils import send_push_notification
 from .utils import send
 import datetime
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import messaging
+from apscheduler.schedulers.background import BackgroundScheduler
 import json
 
 admin = Namespace('admin', description='admin stest API')
@@ -64,4 +62,16 @@ class Push(Resource):
         """
         content = request.json
         response = send_push_notification(content['title'], content['body'], content['token'], content['data'])
+        return { 'res' : '{0} messages were sent successfully'.format(response.success_count) }, 200
+    
+
+@admin.route('/scheduler/send/push', methods=['GET'])
+class Scheduler(Resource):
+    def get(self):
+        """
+        Send push with Scheduler
+        """
+        user = UserService.get_users()
+        user_device_token = user.device_token
+        response = send_push_notification("오전 8시 기도할 시간입니다", "기도합시다", user_device_token, {})
         return { 'res' : '{0} messages were sent successfully'.format(response.success_count) }, 200
