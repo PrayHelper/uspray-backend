@@ -307,7 +307,7 @@ class StorageService:
                 db.session.add(new_complete)
             storage.pray_cnt += 1
             if storage.user_id != storage.pray.user_id and storage.user.device_token:
-                send_push_notification(f'{storage.user.name}님이 기도를 완료했습니다.', f'{storage.user.name}님의 기도를 확인해보세요!', [storage.user.device_token], {})
+                send_push_notification('💘', '누군가가 당신의 기도제목을 두고 기도했어요', [storage.pray.user.device_token], {})
             db.session.commit()
         except Exception as E:
             raise E

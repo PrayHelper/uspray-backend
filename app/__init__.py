@@ -17,7 +17,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 def Scheduler():
     user = User.query.filter(User.device_token != None).all()
     user_device_token = user.device_token
-    response = send_push_notification("오전 8시 기도할 시간입니다", "기도합시다", user_device_token, {})
+    response = send_push_notification("🌅", "오전 8시 기도할 시간이에요", user_device_token, {})
 
 def create_app():
     app = Flask(__name__)
