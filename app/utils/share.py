@@ -90,7 +90,8 @@ class ShareService:
               db.session.commit()
           except: 
             raise ShareError('공유받기에 실패했습니다.')
-        send_push_notification(f'{pray.user.name}님이 기도제목을 공유했습니다.', f'{pray.pray.target}님의 기도제목을 확인해보세요!', [g.user.device_token], {})
+        if g.user.device_token:
+            send_push_notification(f'{pray.user.name}님이 기도제목을 공유했습니다.', f'{pray.pray.target}님의 기도제목을 확인해보세요!', [g.user.device_token], {})
         return [ ShareService.get_share_pray(pray_id) for pray_id in prayList ]
     
     def get_share_list():
