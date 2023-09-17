@@ -247,7 +247,7 @@ class Token(Resource):
         """
         access_token = request.headers.get("Authorization")
         
-        if access_token:
+        if access_token and access_token != "undefined":
             try:
                 payload = jwt.decode(access_token, os.getenv('SECRET_KEY'), algorithms=["HS256"])
                 user_id = payload['id']
