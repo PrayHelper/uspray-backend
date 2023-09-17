@@ -278,12 +278,18 @@ class StorageService:
     
     def finish_storage(storage_id):
         storage = Storage.query.filter_by(id=storage_id, user_id=g.user_id).filter(Storage.deleted_at == None).first()
+        if storage.deadline < datetime.datetime.now():
+            raise StorageFail('already finished')
         if not storage:
             raise StorageFail('storage not found')
         try:
             storage.deadline = datetime.datetime.now()
-            complete = Complete(storage_id=storage.id, user_id=g.user_id)
-            db.session.add(complete)
+            complete = Complete.query.filter_by(storage_id=storage.id, user_id=g.user_id).first()
+            if not complete:
+                complete = Complete(storage_id=storage.id, user_id=g.user_id)
+                db.session.add(complete)
+            else:
+                complete.created_at = datetime.datetime.now()
             db.session.commit()
         except Exception:
             raise StorageFail('finish storage error')
