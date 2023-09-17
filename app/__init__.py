@@ -12,15 +12,11 @@ import os
 
 from flask_migrate import Migrate
 from flask_cors import CORS
-from apscheduler.schedulers.background import BackgroundScheduler
+# from apscheduler.schedulers.background import BackgroundScheduler
 
-def Scheduler():
-    user = User.query.filter(User.device_token != None).all()
-    user_device_token = user.device_token
-    response = send_push_notification("🌅", "오전 8시 기도할 시간이에요", user_device_token, {})
 
 def create_app():
-    app = Flask(__name__)
+    app = Flask(__name__)   
     app.config.from_envvar('APP_CONFIG_FILE')
     CORS(app, resources={r'*': {'origins': ['http://localhost:3000', os.getenv('CORS_ORIGIN')]}})
 
@@ -60,9 +56,17 @@ def create_app():
     app.register_error_handler(CustomUserError, handle_custom_user_error)
 
 
-    # Scheduler
-    sched = BackgroundScheduler(daemon=True)
-    sched.add_job(Scheduler, 'cron', day_of_week='0-6', hour=8)
-    sched.start() 
+    # def Scheduler():
+    #         with app.app_context():
+    #             users = User.query.filter(User.device_token != None).all()
+    #             user_device_tokens = [user.device_token for user in users]
+    #             print(user_device_tokens)
+    #             # response = send_push_notification("🌅", "오전 8시 기도할 시간이에요", user_device_token, {})
+
+    # # Scheduler
+    # sched = BackgroundScheduler(daemon=True)
+    # # sched.add_job(Scheduler, 'cron', day_of_week='0-6', hour=8)
+    # sched.add_job(Scheduler, 'interval', seconds=60)
+    # sched.start() 
 
     return app
