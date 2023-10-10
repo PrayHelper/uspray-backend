@@ -116,7 +116,7 @@ class ShareService:
                 raise ShareError('존재하지 않는 기도제목입니다.')
             if storage.pray.user.device_token:
                 send_push_notification('💌', '누군가가 당신의 기도제목을 저장했어요', [storage.pray.user.device_token], {})
-            result.append(StorageService.create_storage(storage.pray, storage.deadline + datetime.timedelta(days=15)))
+            result.append(StorageService.create_storage(storage.pray, datetime.datetime.now() + datetime.timedelta(days=15)))
         return result
         
 
