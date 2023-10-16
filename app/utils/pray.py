@@ -166,13 +166,13 @@ class StorageService:
                         .filter(Storage.deleted_at == None)\
                         .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter(Complete.created_at >= midnight)\
-                        .order_by(Storage.pray_cnt.desc()).all()
+                        .order_by(Storage.pray_cnt).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
                         .filter(Storage.deleted_at == None)\
                         .filter(Storage.deadline > midnight + datetime.timedelta(days=1))\
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
-                        .order_by(Storage.pray_cnt.desc()).all()
+                        .order_by(Storage.pray_cnt).all()
         storage_completed_dtos = [
             StorageDTO(
                 id=storage.id,
