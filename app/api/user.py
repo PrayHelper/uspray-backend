@@ -69,8 +69,7 @@ class SignUp(Resource):
             birth=content['birth'],
             phone=content['phone']
         )
-        UserService.create_user(user_dto)
-        return { 'message': '회원가입 되었습니다' }, 200
+        return UserService.create_user(user_dto)
 
 
 @user.route('/dup_check/<string:id>', methods=['GET'])

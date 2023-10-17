@@ -172,7 +172,7 @@ class UserService:
             )
             db.session.add(user_notification)
         db.session.commit()
-        return user_dto
+        return {"message": "회원가입이 완료되었습니다."}, 200
 
     def update_phone(phone) -> UserDTO:
         """
