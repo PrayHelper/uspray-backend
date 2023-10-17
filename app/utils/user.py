@@ -136,19 +136,19 @@ class UserService:
         pw_reg = bool(re.match(pw_pattern, user.password))
         phone_reg = bool(re.match(phone_pattern, user.phone))
         if not uid_reg:
-            raise SignUpFail("아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)")
+            return { "message": "아이디 형식이 잘못되었습니다. (6~15 영문소, 숫)" }, 400
         if not pw_reg:
-            raise SignUpFail("비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)")
+            return { "message": "비밀번호 형식이 잘못되었습니다. (8~16 영문대소, 숫, 특수)" }, 400
         if not phone_reg:
-            raise SignUpFail("전화번호 형식이 잘못되었습니다. (01012345678 형식))")
+            return { "전화번호 형식이 잘못되었습니다. (01012345678 형식))" }, 400
 
-        dup_user_id = User.query.filter_by(uid=user.uid).first()
+        dup_user_id = User.query.filter_by(uid=user.uid).filter_by(deleted_at=None).first()
         dup_phone = User.query.filter_by(phone=user.phone).first()
         
         if dup_user_id is not None:
-            raise SignUpFail("중복된 아이디가 존재합니다.")
+            return {"message": "중복된 아이디가 존재합니다." }, 400
         if dup_phone is not None:
-            raise SignUpFail("중복된 전화번호가 존재합니다.")
+            return {"message": "중복된 전화번호가 존재합니다."}, 400
    
         new_password = bcrypt.hashpw(user.password.encode('UTF-8'), bcrypt.gensalt())
 

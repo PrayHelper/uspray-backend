@@ -10,7 +10,7 @@ class User(db.Model):
 		name = db.Column(db.String(150), nullable=False)
 		gender = db.Column(db.String(10), nullable=False)
 		birth = db.Column(db.DateTime(), nullable=False)
-		phone = db.Column(db.String(20), unique=True, nullable=False)
+		phone = db.Column(db.String(20), nullable=False)
 		device_token = db.Column(db.String(200), nullable=True)
 		created_at = db.Column(db.DateTime(), nullable=True, default=datetime.datetime.now())
 		deleted_at = db.Column(db.DateTime(), nullable=True)
