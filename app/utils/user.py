@@ -142,8 +142,8 @@ class UserService:
         if not phone_reg:
             return { "전화번호 형식이 잘못되었습니다. (01012345678 형식))" }, 400
 
-        dup_user_id = User.query.filter_by(uid=user.uid).filter_by(deleted_at=None).first()
-        dup_phone = User.query.filter_by(phone=user.phone).first()
+        dup_user_id = User.query.filter_by(uid=user.uid).first()
+        dup_phone = User.query.filter_by(phone=user.phone).filter_by(deleted_at=None).first()
         
         if dup_user_id is not None:
             return {"message": "중복된 아이디가 존재합니다." }, 400
