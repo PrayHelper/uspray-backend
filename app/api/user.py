@@ -16,7 +16,7 @@ userModel = user.model('User', {
     'id': fields.String(required=True, default='userid', description='user id'),
     'password': fields.String(required=True, default='password', description='user password'),
     'name': fields.String(required=True, default='name', description='user name'),
-    'gender': fields.String(required=True, default='여', description='user gender'),
+    'gender': fields.String(required=True, default='여자', description='user gender'),
     'birth': fields.Date(required=True, default='2023-03-20', description='user birth'),
     'phone': fields.String(required=True, default='01012345678', description='user phone'),
 })
