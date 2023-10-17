@@ -104,8 +104,7 @@ class Login(Resource):
         if bcrypt.checkpw(content['password'].encode('UTF-8'), u.password.encode('UTF-8')):
             access_payload = {
                 'id': str(u.id),
-                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(seconds=30)).isoformat()
-                # 'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24)).isoformat()
+                'access_token_exp': (datetime.datetime.now() + datetime.timedelta(minutes=60*24)).isoformat()
             }
             access_token = jwt.encode(access_payload, os.getenv('SECRET_KEY'), algorithm="HS256")
 
