@@ -81,8 +81,12 @@ class ShareService:
           pray = Storage.query.filter_by(id=pray_id).order_by(Storage.created_at).first()
           if pray is None or pray.user_id == g.user_id or pray.deleted_at is not None:
                 raise ShareError('공유할 수 없는 기도제목입니다.')
-          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id).first():
-                raise ShareError('이미 공유받은 기도제목입니다.')
+          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id, deleted_at=None).first():
+                    raise ShareError('이미 공유받은 기도제목입니다.')
+          if Share.query.filter_by(receipt_id=g.user_id, pray_id=pray.pray_id).first().deleted_at is not None:
+                    share.deleted_at = None
+                    pray.pray.is_shared = True
+                    db.session.commit()
           try:
               share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id, pray_id=pray.pray_id)
               share.save()
