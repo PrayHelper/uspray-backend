@@ -81,19 +81,24 @@ class ShareService:
           pray = Storage.query.filter_by(id=pray_id).order_by(Storage.created_at).first()
           if pray is None or pray.user_id == g.user_id or pray.deleted_at is not None:
                 raise ShareError('공유할 수 없는 기도제목입니다.')
-          if Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id, deleted_at=None).first():
-                    raise ShareError('이미 공유받은 기도제목입니다.')
-          if Share.query.filter_by(receipt_id=g.user_id, pray_id=pray.pray_id).first().deleted_at is not None:
-                    share.deleted_at = None
-                    pray.pray.is_shared = True
-                    db.session.commit()
-          try:
-              share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id, pray_id=pray.pray_id)
-              share.save()
-              pray.pray.is_shared = True
-              db.session.commit()
-          except: 
-            raise ShareError('공유받기에 실패했습니다.')
+          shared_pray = Share.query.filter_by(receipt_id=g.user_id, storage_id=pray_id).first()
+          if shared_pray is not None:
+                    if shared_pray.deleted_at is None:
+                        raise ShareError('이미 공유받은 기도제목입니다.')
+                    else:
+                        shared_pray.deleted_at = None
+                        db.session.commit()
+                        pray.pray.is_shared = True
+                        db.session.commit()
+                        continue
+          else:
+            try:
+                share = ShareDTO(receipt_id=g.user_id, storage_id=pray_id, pray_id=pray.pray_id)
+                share.save()
+                pray.pray.is_shared = True
+                db.session.commit()
+            except: 
+                raise ShareError('공유받기에 실패했습니다.')
         return [ ShareService.get_share_pray(pray_id) for pray_id in prayList ]
     
     def get_share_list():
