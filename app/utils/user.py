@@ -19,7 +19,7 @@ class UserDTO:
     birth: datetime
     phone: str
 
-    def __init__(self, uid, password, name, gender, birth, phone, id=None):
+    def __init__(self, uid, password, name, phone,  gender=None, birth=None, id=None):
         self.uid = uid
         self.password = password
         self.name = name
@@ -34,10 +34,6 @@ class UserDTO:
             raise SignUpFail("비밀번호는 필수 입력 항목입니다.")
         if not name:
             raise SignUpFail("이름은 필수 입력 항목입니다.")
-        if not gender:
-            raise SignUpFail("성별은 필수 입력 항목입니다.")
-        if not birth:
-            raise SignUpFail("생일은 필수 입력 항목입니다.")
         if not phone:
             raise SignUpFail("전화번호는 필수 입력 항목입니다.")
         
