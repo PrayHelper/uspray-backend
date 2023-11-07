@@ -1,7 +1,10 @@
+import base64
 from app.decorators.login_required import login_required
 from flask_restx import Namespace, Resource, fields
 from flask import request
 from app.utils.pray import PrayService, StorageService
+from app.models import db
+from app.models.pray import Pray as P
 pray = Namespace('pray', description='pray test API')
 
 prayModel = pray.model('Pray', {
@@ -17,6 +20,19 @@ prayUpdateModel = pray.model('Pray Update', {
 
 prayListSortBy = pray.parser()
 prayListSortBy.add_argument('sort_by', type=str, required=False, help='date or cnt', location='args', default='date')
+
+@pray.route('/base64', methods=['GET'])
+class PrayBase64(Resource):
+	def get(self):
+		"""
+		기도제목을 base64로 인코딩하여 반환합니다.
+		"""
+		pray = P.query.all()
+		for pray in pray:
+			pray.title = base64.b64encode(pray.title.encode('utf-8')).decode('utf-8')
+			pray.target = base64.b64encode(pray.target.encode('utf-8')).decode('utf-8')
+		db.session.commit()
+		return 
 
 @pray.route('', methods=['POST', 'GET'])
 class Pray(Resource):

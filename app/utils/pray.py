@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from uuid import UUID
 from app.utils.error_handler import PrayFail, StorageFail
 import datetime
+import base64
 from flask import g
 from app.models import db
 from typing import List, Optional, Union
@@ -36,8 +37,8 @@ class PrayDTO:
     def to_model(self) -> Pray:
         return Pray(
             user_id=self.user_id,
-            target=self.target,
-            title=self.title
+            target=base64.b64encode(self.target.encode('utf-8')),
+            title=base64.b64encode(self.title.encode('utf-8'))
         )
     
     def save(self):
@@ -92,8 +93,8 @@ class StorageDTO:
     def __repr__(self):
         return {
             'id': self.id,
-            'target': self.pray.target,
-            'title': self.pray.title,
+            'target': base64.b64decode(self.pray.target).decode('utf-8'),
+            'title': base64.b64decode(self.pray.title).decode('utf-8'),
             'user_id': str(self.user_id),
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
@@ -106,8 +107,8 @@ class StorageDTO:
         origin_pray = Storage.query.filter_by(pray_id=self.pray_id).filter(Storage.deleted_at == None).order_by(Storage.created_at).first()
         return {
             'id': self.id,
-            'target': self.pray.target,
-            'title': self.pray.title,
+            'target': base64.b64decode(self.pray.target.encode()).decode('utf-8'),
+            'title': base64.b64decode(self.pray.title.encode()).decode('utf-8'),
             'pray_cnt': self.pray_cnt,
             'deadline': self.deadline.strftime("%Y-%m-%d"),
             'created_at': self.created_at.strftime("%Y-%m-%d %H:%M:%S"),
