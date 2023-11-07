@@ -37,8 +37,8 @@ class PrayDTO:
     def to_model(self) -> Pray:
         return Pray(
             user_id=self.user_id,
-            target=base64.b64encode(self.target.encode('utf-8')),
-            title=base64.b64encode(self.title.encode('utf-8'))
+            target=base64.b64encode(self.target.encode('utf-8')).decode('utf-8'),
+            title=base64.b64encode(self.title.encode('utf-8')).decode('utf-8')
         )
     
     def save(self):
@@ -231,11 +231,11 @@ class StorageService:
                 pray_id=pray_dto.id,
                 user_id=g.user_id,
                 deadline=deadline
-                # created_at=datetime.datetime.now()
             )
             storage_dto.save()
             return storage_dto.__repr__()
-        except Exception:
+        except Exception as E:
+            print(E, 'Error')
             raise StorageFail('create storage error')
         
 
@@ -364,7 +364,8 @@ class PrayService:
             )
             pray_dto.save()
             return StorageService.create_storage(pray_dto, deadline)
-        except Exception:
+        except Exception as E:
+            print(E)
             raise PrayFail('create pray error')
         
 
