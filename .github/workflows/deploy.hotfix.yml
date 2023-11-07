@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - hotfix
-      - feature/cicd
 
 env:
   HOST:     ${{ secrets.HOST }}
