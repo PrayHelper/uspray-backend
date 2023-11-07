@@ -1,3 +1,4 @@
+import base64
 from datetime import timedelta
 import datetime
 import uuid
@@ -34,8 +35,8 @@ class ShareDTO:
         return {
             'pray_id': self.storage_id,
             'share_name': self.storage.user.name,
-            'target': self.storage.pray.target,
-            'title': self.storage.pray.title,
+            'target': base64.b64decode(self.storage.pray.target).decode('utf-8'),
+            'title': base64.b64decode(self.storage.pray.title).decode('utf-8'),
             'shared_at': self.shared_at.strftime('%Y-%m-%d %H:%M:%S')
         }
 
