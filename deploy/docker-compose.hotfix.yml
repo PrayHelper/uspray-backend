@@ -11,7 +11,7 @@ services:
       - ../:/app
     environment:
       FLASK_APP: app
-      APP_CONFIG_FILE: config/hotfixuction.py
+      APP_CONFIG_FILE: config/production.py
       FLASK_DEBUG: "false"
       TZ: "Asia/Seoul"
     command: ["python3", "-m", "flask", "run", "--host=0.0.0.0"]
