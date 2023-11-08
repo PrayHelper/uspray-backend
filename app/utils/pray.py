@@ -265,7 +265,8 @@ class StorageService:
             if 'pray_cnt' in content:
                 storage.pray_cnt = content['pray_cnt']
             db.session.commit()
-        except Exception:
+        except Exception as E:
+            print(E)
             raise StorageFail('update storage error')
         return StorageDTO(
                 id=storage.id,
@@ -382,14 +383,15 @@ class PrayService:
                 raise PrayFail('can not update other user pray')
             pray = Pray.query.filter_by(id=storage.pray_id).first()
             if 'target' in content:
-                pray.target = content['target']
+                pray.target =  base64.b64encode(content['target'].encode('utf-8')).decode('utf-8')
             if 'title' in content:
-                pray.title = content['title']
+                pray.title = base64.b64encode(content['title'].encode('utf-8')).decode('utf-8')
             if 'deadline' in content:
                 storage.deadline = content['deadline']
             db.session.commit()
             return StorageService.get_storage(storage_id)
 
-        except Exception:
+        except Exception as E:
+            print(E)
             raise PrayFail('update pray error')
             
