@@ -273,6 +273,7 @@ class StorageService:
                 user_id=storage.user_id,
                 pray_cnt=storage.pray_cnt,
                 deadline=storage.deadline,
+                is_shared=storage.pray.is_shared,
                 created_at=storage.created_at,
                 pray=storage.pray
             ).__repr__()
