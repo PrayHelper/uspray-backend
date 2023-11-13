@@ -19,7 +19,7 @@ import re
 def create_app():
     app = Flask(__name__)   
     app.config.from_envvar('APP_CONFIG_FILE')
-    cors_origins = re.compile(r"https?://(\w+\.)?uspray\.com")
+    cors_origins = re.compile(r"https?://(\w+\.)*uspray\.kr")
     CORS(app, origins=cors_origins)
 
     # Swagger
