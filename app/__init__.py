@@ -12,13 +12,15 @@ import os
 
 from flask_migrate import Migrate
 from flask_cors import CORS
+import re
 # from apscheduler.schedulers.background import BackgroundScheduler
 
 
 def create_app():
     app = Flask(__name__)   
     app.config.from_envvar('APP_CONFIG_FILE')
-    CORS(app, resources={r'*': {'origins': ['http://localhost:3000', os.getenv('CORS_ORIGIN')]}})
+    cors_origins = re.compile(r"https?://(\w+\.)?uspray\.com")
+    CORS(app, origins=cors_origins)
 
     # Swagger
     authorizations = {
