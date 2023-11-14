@@ -53,6 +53,11 @@ deviceTokenModel = user.model('DeviceToken', {
     'device_token': fields.String(required=True, default='device_token', description='device token')
 })
 
+withdrawalModel = user.model('Withdrawal', {
+    'reason_id': fields.List(fields.Integer, required=True, default=[1, 2], description='reason id'),
+    'etc': fields.String(required=False, default='기타', description='etc')
+})
+
 @user.route('/signup', methods=['POST'])
 class SignUp(Resource):
     @user.expect(userModel)
@@ -229,12 +234,14 @@ class CheckPassword(Resource):
 class Withdrawal(Resource):
     @user.doc(responses={200: 'OK'})
     @user.doc(responses={400: 'Bad Request'})
+    @user.expect(withdrawalModel)
     @login_required
     def delete(self):
         """
         Withdrawal
         """
-        UserService.delete_user()
+        content = request.json
+        UserService.delete_user(content)
         return { 'message' : '회원탈퇴 되었습니다.' }, 200
     
 

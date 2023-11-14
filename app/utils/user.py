@@ -4,7 +4,7 @@ from uuid import UUID
 from app.utils.error_handler import SignUpFail, UserFail
 import datetime
 from app.models import db
-from app.models.user import User, Notification, UserNotification
+from app.models.user import User, Notification, UserNotification, UserDelete, UserDeleteReason
 import bcrypt
 import re
 from flask import g
@@ -187,13 +187,31 @@ class UserService:
         db.session.commit()
         return user
 
-    def delete_user():
+    def delete_user(withdrawalModel):
         """
         유저를 삭제합니다.
         """
         user = User.query.filter_by(id=g.user_id).first()
         if user is None:
             raise UserFail("존재하지 않는 유저입니다.")
+        for id in withdrawalModel["reason_id"]:
+            delete_reason = UserDeleteReason.query.filter_by(id=id).first()
+            if delete_reason is None:
+                raise UserFail("존재하지 않는 탈퇴 사유입니다.")
+            if id == 5:
+                if not withdrawalModel["etc"]:
+                    raise UserFail("기타 사유를 입력해주세요.")
+                user_delete = UserDelete(
+                    user_id=g.user_id,
+                    reason_id=delete_reason.id,
+                    etc=withdrawalModel["etc"]
+                )
+            else:
+                user_delete = UserDelete(
+                    user_id=g.user_id,
+                    reason_id=delete_reason.id
+                )
+            db.session.add(user_delete)
         user.deleted_at = datetime.datetime.now()
         db.session.commit()
         return user
