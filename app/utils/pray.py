@@ -152,27 +152,27 @@ class StorageService:
         if args == 'date':
             storages_completed = Storage.query.join(Complete)\
                         .filter_by(user_id=g.user_id)\
-                        .filter(func.DATE(Storage.deadline) > today) \
+                        .filter(func.DATE(Storage.deadline) >= today) \
                         .filter(Complete.created_at >= midnight)\
                         .filter(Storage.deleted_at == None)\
                         .order_by(Storage.deadline).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
                         .filter(Storage.deleted_at == None)\
-                        .filter(func.DATE(Storage.deadline) > today) \
+                        .filter(func.DATE(Storage.deadline) >= today) \
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.deadline).all()
         elif args == 'cnt':
             storages_completed = Storage.query.join(Complete)\
                         .filter_by(user_id=g.user_id)\
                         .filter(Storage.deleted_at == None)\
-                        .filter(func.DATE(Storage.deadline) > today) \
+                        .filter(func.DATE(Storage.deadline) >= today) \
                         .filter(Complete.created_at >= midnight)\
                         .order_by(Storage.pray_cnt).all()
             storages_uncompleted = Storage.query.outerjoin(Complete)\
                         .filter(Storage.user_id == g.user_id)\
                         .filter(Storage.deleted_at == None)\
-                        .filter(func.DATE(Storage.deadline) > today) \
+                        .filter(func.DATE(Storage.deadline) >= today) \
                         .filter((Complete.created_at < midnight) | (Complete.created_at == None))\
                         .order_by(Storage.pray_cnt).all()
         storage_completed_dtos = [
@@ -322,13 +322,13 @@ class StorageService:
         today = current_time.date()
         if content['sort_by'] == 'cnt':
             storages = Storage.query.filter_by(user_id=g.user_id)\
-                .filter(func.DATE(Storage.deadline) <= today)\
+                .filter(func.DATE(Storage.deadline) < today)\
                 .filter(Storage.deleted_at == None)\
                 .order_by(Storage.pray_cnt.desc())\
                 .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
         else:
             storages = Storage.query.filter_by(user_id=g.user_id)\
-                .filter(func.DATE(Storage.deadline) <= today)\
+                .filter(func.DATE(Storage.deadline) < today)\
                 .filter(Storage.deleted_at == None)\
                 .order_by(Storage.created_at.desc())\
                 .paginate(page=content['page'], per_page=content['per_page'], error_out=False)
