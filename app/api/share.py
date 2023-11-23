@@ -85,15 +85,15 @@ class SharePrayByLink(Resource):
           return ShareService.share_pray(prays_decoded)
    
 
-# @share.route('/social', methods=['POST'])
-# class SharePrayByLink(Resource):
-#     @login_required
-#     @share.expect(prayListModel)
-#     def post(self):
-#       """
-#       기도제목을 공유합니다. 
-#       """
-#       content = request.json
-#       return ShareService.share_pray(content['pray_id_list'])
+@share.route('/social/new', methods=['POST'])
+class SharePrayByLink(Resource):
+    @login_required
+    @share.expect(prayListModel)
+    def post(self):
+      """
+      기도제목을 공유합니다. 
+      """
+      content = request.json
+      return ShareService.share_pray(content['pray_id_list'])
     
 
